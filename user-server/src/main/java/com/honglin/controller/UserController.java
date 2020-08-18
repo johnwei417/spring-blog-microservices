@@ -42,14 +42,10 @@ public class UserController {
 
     @PostMapping("/register")
     public CommonResponse<UserDto> createUser(@RequestBody UserDto user) {
-//        if (userService.loadUserByUsername(user.getUsername()) != null) {
-//            log.warn("Username already exist!");
-//            throw new DuplicateUserException("Username already exist!");
-//        }
-
         try{
             userService.loadUserByUsername(user.getUsername());
             log.warn("Username already exist!");
+            return new CommonResponse<>(HttpStatus.SC_CONFLICT, user.getUsername() + " already exist!");
         }catch(UsernameNotFoundException e) {
             List<Roles> authorities = new ArrayList<>();
             authorities.add(roleService.getAuthorityById(1));
@@ -79,6 +75,6 @@ public class UserController {
 //            executorService.shutdownNow();
 //        }
         log.info("User: " + user.getUsername() + " register success!");
-        return new CommonResponse<>(200, user.getUsername() + "register success!");
+        return new CommonResponse<>(200, user.getUsername() + " register success!");
     }
 }
