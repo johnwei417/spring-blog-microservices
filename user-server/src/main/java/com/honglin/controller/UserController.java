@@ -8,8 +8,10 @@ import com.honglin.service.RoleService;
 import com.honglin.service.impl.UserServiceImpl;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,10 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @RestController
 @Slf4j
@@ -41,11 +39,20 @@ public class UserController {
 
     @PostMapping("/register")
     public CommonResponse<UserDto> createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
-        try{
+        if (bindingResult.hasErrors()) {
+            if (bindingResult.getErrorCount() > 0) {
+                List<FieldError> errorFields = bindingResult.getFieldErrors();
+                for (FieldError fieldError : errorFields) {
+                    return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, fieldError.getDefaultMessage());
+                }
+            }
+        }
+
+        try {
             userService.loadUserByUsername(user.getUsername());
             log.warn("Username already exist!");
             throw new DuplicateUserException("Username already exist!");
-        }catch(UsernameNotFoundException e) {
+        } catch (UsernameNotFoundException e) {
             List<Roles> authorities = new ArrayList<>();
             authorities.add(roleService.getAuthorityById(1));
             user.setAuthorities(authorities);
