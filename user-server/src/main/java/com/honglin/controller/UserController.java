@@ -2,20 +2,19 @@ package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
 import com.honglin.entity.Roles;
-import com.honglin.entity.User;
 import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.httpclient.blogClient;
 import com.honglin.service.RoleService;
 import com.honglin.service.impl.UserServiceImpl;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
-import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -41,11 +40,11 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public CommonResponse<UserDto> createUser(@RequestBody UserDto user) {
+    public CommonResponse<UserDto> createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
         try{
             userService.loadUserByUsername(user.getUsername());
             log.warn("Username already exist!");
-            return new CommonResponse<>(HttpStatus.SC_CONFLICT, user.getUsername() + " already exist!");
+            throw new DuplicateUserException("Username already exist!");
         }catch(UsernameNotFoundException e) {
             List<Roles> authorities = new ArrayList<>();
             authorities.add(roleService.getAuthorityById(1));
