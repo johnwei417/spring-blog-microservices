@@ -1,6 +1,6 @@
 package com.honglin.config;
 
-import com.honglin.service.UserServiceDetail;
+import com.honglin.service.impl.UserDetailImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private UserServiceDetail userServiceDetail;
+    private UserDetailImpl userServiceDetail;
 
     @Override
     @Bean
