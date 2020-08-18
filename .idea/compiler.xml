@@ -8,8 +8,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="blog-server" />
-        <module name="zuul-gateway" />
         <module name="eureka-server" />
+        <module name="zuul-gateway" />
         <module name="user-server" />
         <module name="auth-server" />
       </profile>
