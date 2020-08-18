@@ -1,6 +1,5 @@
 package com.honglin.vo;
 
-import com.honglin.common.constraint.ValidPassword;
 import com.honglin.entity.Roles;
 import lombok.Data;
 
@@ -20,7 +19,7 @@ public class UserDto {
 
     @NotNull(message = "password cannot be null")
     @NotBlank(message = "password cannot be blank")
-    @ValidPassword
+//    @ValidPassword
     private String password;
 
     private String firstname;
