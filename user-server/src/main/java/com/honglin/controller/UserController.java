@@ -82,7 +82,7 @@ public class UserController {
 
             log.info(credentials.getUsername() + " login success");
 
-            return new CommonResponse<>(200, credentials.getUsername() + " login success");
+            return new CommonResponse<>(200, credentials.getUsername() + " login success", body);
         } catch (HttpClientErrorException e) {
             return new CommonResponse<>(HttpStatus.SC_UNAUTHORIZED, "invalid credential");
         }
