@@ -33,4 +33,4 @@ zuul:
       sensitive-headers: Cookie,Set-Cookie
     user:
       serviceId: user-service
-      sensitive-headers: Cookie,Set-Cookie
+      sensitive-headers:

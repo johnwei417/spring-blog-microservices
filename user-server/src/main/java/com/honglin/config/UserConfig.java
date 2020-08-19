@@ -6,9 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class UserConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     public RequestInterceptor requestTokenBearerInterceptor() {
@@ -22,4 +28,5 @@ public class UserConfig {
             }
         };
     }
+
 }

@@ -17,4 +17,5 @@ public interface blogClient {
      */
     @RequestMapping(method = RequestMethod.POST, value = "/syncUser", consumes = "application/json")
     CommonResponse sync(UserDto userDto);
+
 }

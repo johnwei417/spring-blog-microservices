@@ -6,15 +6,23 @@ import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.httpclient.blogClient;
 import com.honglin.service.RoleService;
 import com.honglin.service.impl.UserServiceImpl;
+import com.honglin.vo.Credentials;
+import com.honglin.vo.TokenInfo;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
+import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -30,12 +38,51 @@ public class UserController {
 
     private final blogClient blogClient;
 
-    public UserController(UserServiceImpl userService, RoleService roleService, blogClient blogClient) {
+    private final RestTemplate restTemplate;
+
+    public UserController(UserServiceImpl userService, RoleService roleService, blogClient blogClient, RestTemplate restTemplate) {
         this.userService = userService;
         this.roleService = roleService;
         this.blogClient = blogClient;
+        this.restTemplate = restTemplate;
     }
 
+    @PostMapping("/login")
+    public CommonResponse<TokenInfo> login(@RequestParam(required = true, name = "client_id") String client_id,
+                                           @RequestParam(required = true, name = "client_secret") String client_secret,
+                                           @RequestBody @Valid Credentials credentials, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            if (bindingResult.getErrorCount() > 0) {
+                List<FieldError> errorFields = bindingResult.getFieldErrors();
+                for (FieldError fieldError : errorFields) {
+                    return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, fieldError.getDefaultMessage());
+                }
+            }
+        }
+        String url = "http://localhost:9890/oauth/token";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setBasicAuth(client_id, client_secret);
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("username", credentials.getUsername());
+        params.add("password", credentials.getPassword());
+        params.add("grant_type", "password");
+        params.add("scope", "read write");
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(params, headers);
+
+        log.info(credentials.getUsername() + " trying to login");
+        try {
+            ResponseEntity<TokenInfo> response = restTemplate.exchange(url, HttpMethod.POST, entity, TokenInfo.class);
+            TokenInfo body = response.getBody();
+            log.info(credentials.getUsername() + " login success");
+            return new CommonResponse<TokenInfo>(200, credentials.getUsername() + " login success", body);
+        } catch (HttpClientErrorException e) {
+            return new CommonResponse<>(HttpStatus.SC_UNAUTHORIZED, "invalid credential");
+        }
+    }
 
     @PostMapping("/register")
     public CommonResponse<UserDto> createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
