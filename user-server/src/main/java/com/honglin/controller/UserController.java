@@ -11,6 +11,8 @@ import com.honglin.vo.TokenInfo;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
@@ -36,14 +38,14 @@ public class UserController {
 
     private final RoleService roleService;
 
-    private final blogClient blogClient;
-
     private final RestTemplate restTemplate;
+    @Autowired
+    @Lazy
+    private blogClient blogClient;
 
-    public UserController(UserServiceImpl userService, RoleService roleService, blogClient blogClient, RestTemplate restTemplate) {
+    public UserController(UserServiceImpl userService, RoleService roleService, RestTemplate restTemplate) {
         this.userService = userService;
         this.roleService = roleService;
-        this.blogClient = blogClient;
         this.restTemplate = restTemplate;
     }
 
@@ -60,7 +62,7 @@ public class UserController {
                 }
             }
         }
-        String url = "http://localhost:9890/oauth/token";
+        String url = "http://auth-service/oauth/token";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(client_id, client_secret);
@@ -77,8 +79,10 @@ public class UserController {
         try {
             ResponseEntity<TokenInfo> response = restTemplate.exchange(url, HttpMethod.POST, entity, TokenInfo.class);
             TokenInfo body = response.getBody();
+
             log.info(credentials.getUsername() + " login success");
-            return new CommonResponse<TokenInfo>(200, credentials.getUsername() + " login success", body);
+
+            return new CommonResponse<>(200, credentials.getUsername() + " login success");
         } catch (HttpClientErrorException e) {
             return new CommonResponse<>(HttpStatus.SC_UNAUTHORIZED, "invalid credential");
         }
