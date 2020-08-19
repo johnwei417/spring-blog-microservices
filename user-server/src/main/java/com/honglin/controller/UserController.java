@@ -1,11 +1,7 @@
 package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
-import com.honglin.entity.Roles;
-import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.httpclient.blogClient;
-import com.honglin.service.RoleService;
-import com.honglin.service.impl.UserServiceImpl;
 import com.honglin.vo.Credentials;
 import com.honglin.vo.TokenInfo;
 import com.honglin.vo.UserDto;
@@ -14,7 +10,6 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
@@ -27,25 +22,19 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @Slf4j
 public class UserController {
 
-    private final UserServiceImpl userService;
-
-    private final RoleService roleService;
-
     private final RestTemplate restTemplate;
+
     @Autowired
     @Lazy
     private blogClient blogClient;
 
-    public UserController(UserServiceImpl userService, RoleService roleService, RestTemplate restTemplate) {
-        this.userService = userService;
-        this.roleService = roleService;
+    public UserController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -89,7 +78,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public CommonResponse<UserDto> createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
+    public CommonResponse createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             if (bindingResult.getErrorCount() > 0) {
                 List<FieldError> errorFields = bindingResult.getFieldErrors();
@@ -99,15 +88,14 @@ public class UserController {
             }
         }
 
+        String url = "http://auth-service/createNewUser";
+        HttpEntity<UserDto> request = new HttpEntity<>(user);
         try {
-            userService.loadUserByUsername(user.getUsername());
-            log.warn("Username already exist!");
-            throw new DuplicateUserException("Username already exist!");
-        } catch (UsernameNotFoundException e) {
-            List<Roles> authorities = new ArrayList<>();
-            authorities.add(roleService.getAuthorityById(1));
-            user.setAuthorities(authorities);
-            userService.save(user);
+            restTemplate.postForObject(url, request, CommonResponse.class);
+            log.info("User: " + user.getUsername() + " register success!");
+            return new CommonResponse<>(HttpStatus.SC_OK, user.getUsername() + " register success!");
+        } catch (HttpClientErrorException e) {
+            return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, "Duplicated Username!");
         }
 
         //call another service: blogClient to create another user table in blog2 database;
@@ -131,7 +119,5 @@ public class UserController {
 //        if (!executorService.isShutdown()) {
 //            executorService.shutdownNow();
 //        }
-        log.info("User: " + user.getUsername() + " register success!");
-        return new CommonResponse<>(200, user.getUsername() + " register success!");
     }
 }

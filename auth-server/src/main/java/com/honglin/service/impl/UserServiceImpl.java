@@ -1,6 +1,6 @@
 package com.honglin.service.impl;
 
-import com.honglin.dao.UserRepo;
+import com.honglin.dao.UserRep;
 import com.honglin.entity.User;
 import com.honglin.service.UserService;
 import com.honglin.vo.UserDto;
@@ -19,11 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class UserServiceImpl implements UserDetailsService, UserService {
 
-    private final UserRepo userRep;
+    private final UserRep userRep;
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepo userRep, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRep userRep, PasswordEncoder passwordEncoder) {
         this.userRep = userRep;
         this.passwordEncoder = passwordEncoder;
     }

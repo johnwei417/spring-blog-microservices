@@ -1,6 +1,6 @@
 package com.honglin.config;
 
-import com.honglin.service.impl.UserDetailImpl;
+import com.honglin.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private UserDetailImpl userServiceDetail;
+    private UserServiceImpl userServiceDetail;
 
     @Override
     @Bean
@@ -51,7 +51,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/oauth/**").permitAll()
+                .antMatchers("/oauth/**", "/createNewUser").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic();

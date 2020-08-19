@@ -1,16 +1,6 @@
 spring:
   application:
     name: user-service
-  datasource:
-    url: jdbc:mysql://localhost:3306/blog?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=EST
-    username: root
-    password: wei000311
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
 
 security:
   oauth2:

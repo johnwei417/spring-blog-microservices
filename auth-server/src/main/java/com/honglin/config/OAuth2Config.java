@@ -1,9 +1,10 @@
 package com.honglin.config;
 
-import com.honglin.service.impl.UserDetailImpl;
+import com.honglin.service.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,11 +24,12 @@ import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
 public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
     @Autowired
+    @Lazy
     private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
-    private UserDetailImpl userServiceDetail;
+    private UserServiceImpl userService;
 
 
     @Bean
@@ -49,7 +51,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.tokenStore(tokenStore())
                 .tokenEnhancer(jwtTokenEnhancer())
-                .userDetailsService(userServiceDetail)
+                .userDetailsService(userService)
                 .authenticationManager(authenticationManager);
     }
 
@@ -91,18 +93,12 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
                 .accessTokenValiditySeconds(3600)
                 .resourceIds("user-service")
                 .and()
-                .withClient("iphone")
-                .secret(passwordEncoder.encode("jojowei"))
-                .authorizedGrantTypes("password")
-                .scopes("read", "write")
-                .accessTokenValiditySeconds(3600)
-                .resourceIds()
-                .and()
                 .withClient("browser")
                 .secret(passwordEncoder.encode("jojowei"))
-                .authorizedGrantTypes("password")
+                .authorizedGrantTypes("password", "refresh_token")
                 .scopes("read", "write")
                 .accessTokenValiditySeconds(3600)
+                .refreshTokenValiditySeconds(2592000) //30 days
                 .resourceIds();
     }
 
