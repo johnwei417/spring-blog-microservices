@@ -1,6 +1,7 @@
 package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
+import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.httpclient.blogClient;
 import com.honglin.vo.Credentials;
 import com.honglin.vo.TokenInfo;
@@ -34,6 +35,7 @@ public class UserController {
     @Lazy
     private blogClient blogClient;
 
+    @Autowired
     public UserController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -93,10 +95,12 @@ public class UserController {
         try {
             restTemplate.postForObject(url, request, CommonResponse.class);
             log.info("User: " + user.getUsername() + " register success!");
-            return new CommonResponse<>(HttpStatus.SC_OK, user.getUsername() + " register success!");
-        } catch (HttpClientErrorException e) {
-            return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, "Duplicated Username!");
+            return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
+        } catch (HttpClientErrorException ex) {
+            log.debug(user.getUsername() + " already exist");
+            throw new DuplicateUserException(user.getUsername() + " already exist");
         }
+
 
         //call another service: blogClient to create another user table in blog2 database;
 //        ExecutorService executorService = Executors.newFixedThreadPool(1);

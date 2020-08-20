@@ -7,11 +7,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class UserContollerAdvice {
+public class UserControllerAdvice {
 
     @ExceptionHandler(value = DuplicateUserException.class)
     @ResponseStatus(org.springframework.http.HttpStatus.BAD_REQUEST)
-    public CommonResponse duplicateUser(DuplicateUserException ex) {
+    public CommonResponse handleDuplicateUserException(DuplicateUserException ex) {
         return new CommonResponse(HttpStatus.SC_BAD_REQUEST, ex.getMessage());
     }
 }

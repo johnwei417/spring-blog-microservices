@@ -7,6 +7,7 @@ import com.honglin.service.RoleService;
 import com.honglin.service.impl.UserServiceImpl;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,6 +24,7 @@ public class AuthController {
 
     private final RoleService roleService;
 
+    @Autowired
     public AuthController(UserServiceImpl userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
@@ -40,8 +42,9 @@ public class AuthController {
             authorities.add(roleService.getAuthorityById(1));
             user.setAuthorities(authorities);
             userService.save(user);
+            log.info("User: " + user.getUsername() + " register success!");
         }
-        log.info("User: " + user.getUsername() + " register success!");
     }
+
 
 }
