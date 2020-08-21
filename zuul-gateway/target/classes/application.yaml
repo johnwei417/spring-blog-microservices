@@ -1,6 +1,11 @@
 spring:
   application:
     name: zuul-gateway
+  redis:
+    timeout: 10
+    database: 0
+    host: 127.0.0.1
+    port: 6379
 
 server:
   port: 10000
@@ -38,3 +43,22 @@ zuul:
     user:
       serviceId: user-service
       sensitive-headers:
+  ratelimit:
+    enabled: true
+    repository: REDIS
+    policy-list:
+      token:
+        - limit: 5
+          refresh-interval: 2
+          type:
+            - origin
+      blog:
+        - limit: 20
+          refresh-interval: 2
+          type:
+            - origin
+      user:
+        - limit: 5
+          refresh-interval: 2
+          type:
+            - origin
