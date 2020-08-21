@@ -2,10 +2,9 @@ spring:
   application:
     name: zuul-gateway
   redis:
-    timeout: 10
-    database: 0
     host: 127.0.0.1
     port: 6379
+    password: jojowei
 
 server:
   port: 10000
