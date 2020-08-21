@@ -3,13 +3,11 @@ package com.honglin.controller;
 import com.honglin.common.CommonResponse;
 import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.httpclient.blogClient;
-import com.honglin.vo.Credentials;
-import com.honglin.vo.TokenInfo;
-import com.honglin.vo.UserDto;
+import com.honglin.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -24,6 +22,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @RestController
 @Slf4j
@@ -32,7 +34,6 @@ public class UserController {
     private final RestTemplate restTemplate;
 
     @Autowired
-    @Lazy
     private blogClient blogClient;
 
     @Autowired
@@ -91,37 +92,36 @@ public class UserController {
         }
 
         String url = "http://auth-service/createNewUser";
-        HttpEntity<UserDto> request = new HttpEntity<>(user);
+        authDto autDto = new authDto();
+        BeanUtils.copyProperties(user, autDto);
+        HttpEntity<authDto> request = new HttpEntity<>(autDto);
         try {
             restTemplate.postForObject(url, request, CommonResponse.class);
             log.info("User: " + user.getUsername() + " register success!");
-            return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
+            //return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
         } catch (HttpClientErrorException ex) {
             log.debug(user.getUsername() + " already exist");
             throw new DuplicateUserException(user.getUsername() + " already exist");
         }
 
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        blogUserDto user1 = new blogUserDto();
+        BeanUtils.copyProperties(user, user1);
+        Future<CommonResponse> future = executorService.submit(() -> blogClient.sync(user1));
+        if (future.isDone()) {
+            try {
+                if (future.get().getCode() != 200) {
+                    log.error("transaction error happens at blog server");
+                    return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at blog server failed");
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
 
-        //call another service: blogClient to create another user table in blog2 database;
-//        ExecutorService executorService = Executors.newFixedThreadPool(1);
-//        Future<CommonResponse> future = executorService.submit(() -> blogClient.sync(user));
-//        if (future.isDone()) {
-//            try {
-//                if (future.get().getCode() != 200) {
-//                    User user1 = new User();
-//                    BeanUtils.copyProperties(user, user1);
-//                    userService.delete(user1);
-//                    log.error("transaction error happens at blog server");
-//                    return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at blog server failed");
-//                }
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            } catch (ExecutionException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (!executorService.isShutdown()) {
-//            executorService.shutdownNow();
-//        }
+
+        return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
     }
 }

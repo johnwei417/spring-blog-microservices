@@ -1,15 +1,13 @@
 package com.honglin.vo;
 
-
 import lombok.Data;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-
 @Data
-public class UserDto {
+public class authDto {
     private Integer id;
 
     @NotNull(message = "username cannot be null")
@@ -27,9 +25,4 @@ public class UserDto {
 
     @Email
     private String email;
-
-    private byte[] avatar;
-
-    private String profile;
-
 }

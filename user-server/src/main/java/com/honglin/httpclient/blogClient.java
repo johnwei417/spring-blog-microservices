@@ -2,7 +2,7 @@ package com.honglin.httpclient;
 
 
 import com.honglin.common.CommonResponse;
-import com.honglin.vo.UserDto;
+import com.honglin.vo.blogUserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,10 +12,10 @@ public interface blogClient {
     /**
      * call blog server to create
      *
-     * @param userDto
+     * @param blogUserDto
      * @return
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/syncUser", consumes = "application/json")
-    CommonResponse sync(UserDto userDto);
+    @RequestMapping(method = RequestMethod.POST, value = "/addUser", consumes = "application/json")
+    CommonResponse sync(blogUserDto blogUserDto);
 
 }
