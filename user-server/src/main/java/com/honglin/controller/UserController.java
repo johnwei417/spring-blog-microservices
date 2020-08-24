@@ -2,7 +2,9 @@ package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
 import com.honglin.exceptions.DuplicateUserException;
+import com.honglin.exceptions.KafkaFailureException;
 import com.honglin.httpclient.blogClient;
+import com.honglin.service.KafkaSender;
 import com.honglin.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
@@ -35,6 +37,9 @@ public class UserController {
 
     @Autowired
     private blogClient blogClient;
+
+    @Autowired
+    private KafkaSender emailSender;
 
     @Autowired
     public UserController(RestTemplate restTemplate) {
@@ -120,7 +125,16 @@ public class UserController {
                 e.printStackTrace();
             }
         }
-
+        try {
+            EmailDto emailDto = new EmailDto();
+            emailDto.setUsername(user.getUsername());
+            emailDto.setEmail(user.getEmail());
+            emailDto.setFirstname(user.getFirstname());
+            emailDto.setLastname(user.getLastname());
+            emailSender.send(emailDto);
+        } catch (KafkaFailureException ex) {
+            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "fail to send email request to kafka");
+        }
 
         return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
     }

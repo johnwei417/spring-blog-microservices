@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/blog2?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=EST
     username: root
-    password: jojowei
+    password: wei000311
   jpa:
     hibernate:
       ddl-auto: update

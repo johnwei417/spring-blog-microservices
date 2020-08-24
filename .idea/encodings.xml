@@ -3,6 +3,7 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/auth-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/blog-server/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/email-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/eureka-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/user-server/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/zuul-gateway/src/main/java" charset="UTF-8" />

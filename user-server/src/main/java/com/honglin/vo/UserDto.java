@@ -21,11 +21,15 @@ public class UserDto {
 //    @ValidPassword
     private String password;
 
+    @NotNull
     private String firstname;
 
+    @NotNull
     private String lastname;
 
     @Email
+    @NotNull
+    @NotBlank
     private String email;
 
     private byte[] avatar;

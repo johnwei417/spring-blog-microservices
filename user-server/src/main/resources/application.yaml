@@ -1,6 +1,22 @@
 spring:
   application:
     name: user-service
+  kafka:
+    bootstrap-servers: 127.0.0.1:9092
+    listener:
+      missing-topics-fatal: false
+      concurrency: 3
+    producer:
+      client-id: userserver
+      retries: 0
+      batch-size: 16384
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.honglin.vo.EmailSerializer
+      acks: -1
+    properties:
+      linger:
+        ms: 1
 
 security:
   oauth2:

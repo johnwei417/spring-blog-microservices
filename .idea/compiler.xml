@@ -8,8 +8,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="blog-server" />
-        <module name="eureka-server" />
+        <module name="email-server" />
         <module name="zuul-gateway" />
+        <module name="eureka-server" />
         <module name="user-server" />
         <module name="auth-server" />
       </profile>
@@ -18,6 +19,7 @@
       <module name="auth-server" target="1.8" />
       <module name="blog" target="1.8" />
       <module name="blog-server" target="1.8" />
+      <module name="email-server" target="1.8" />
       <module name="eureka-server" target="1.8" />
       <module name="user-server" target="1.8" />
       <module name="zuul-gateway" target="1.8" />
@@ -28,6 +30,7 @@
       <module name="auth-server" options="-parameters" />
       <module name="blog" options="-parameters" />
       <module name="blog-server" options="-parameters" />
+      <module name="email-server" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="user-server" options="-parameters" />
       <module name="zuul-gateway" options="-parameters" />
