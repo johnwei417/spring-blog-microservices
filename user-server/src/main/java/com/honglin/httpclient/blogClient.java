@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-@FeignClient("blog-service")
+@FeignClient(name = "blog-service", fallbackFactory = blogclientFallbackFactory.class)
 public interface blogClient {
     /**
      * call blog server to create

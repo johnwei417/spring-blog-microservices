@@ -46,5 +46,11 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/deleteUser")
+    public void deleteUser(@RequestBody UserDto user) {
+        userService.delete(user);
+        log.info("User: " + user.getUsername() + " deleted success!");
+    }
+
 
 }

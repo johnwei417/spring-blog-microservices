@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
         User user = userRep.findByUsername(s);
         if (user == null) {
-            log.warn("Invalid username or password.");
+            // log.warn("Invalid username or password.");
             throw new UsernameNotFoundException("Invalid username or password.");
         }
         return user;
@@ -52,8 +52,9 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class, isolation = Isolation.REPEATABLE_READ)
-    public void delete(User user) {
-        userRep.delete(user);
+    public void delete(UserDto userDto) {
+        userRep.deleteByUsername(userDto.getUsername());
+        log.info(userDto.getUsername() + " remove from db successfully");
     }
 
 }

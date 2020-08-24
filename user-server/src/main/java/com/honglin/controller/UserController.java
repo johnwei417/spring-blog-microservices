@@ -24,10 +24,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 @RestController
 @Slf4j
@@ -102,39 +98,38 @@ public class UserController {
         HttpEntity<authDto> request = new HttpEntity<>(autDto);
         try {
             restTemplate.postForObject(url, request, CommonResponse.class);
-            log.info("User: " + user.getUsername() + " register success!");
-            //return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
+            log.info("User: " + user.getUsername() + " added to db in auth server!");
         } catch (HttpClientErrorException ex) {
             log.debug(user.getUsername() + " already exist");
             throw new DuplicateUserException(user.getUsername() + " already exist");
         }
 
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
         blogUserDto user1 = new blogUserDto();
         BeanUtils.copyProperties(user, user1);
-        Future<CommonResponse> future = executorService.submit(() -> blogClient.sync(user1));
-        if (future.isDone()) {
+        CommonResponse response = blogClient.sync(user1);
+        if (response.getCode() != 200) {
+            log.error("Error happens at blog server, rollback");
+            String deleteUrl = "http://auth-service/deleteUser";
             try {
-                if (future.get().getCode() != 200) {
-                    log.error("transaction error happens at blog server");
-                    return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at blog server failed");
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+                restTemplate.postForObject(deleteUrl, request, CommonResponse.class);
+                log.info(user.getUsername() + " remove from auth server db");
+                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, user.getUsername() + " failed to register");
+            } catch (HttpClientErrorException ex) {
+                return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at auth server failed");
+            }
+        } else {
+            try {
+                EmailDto emailDto = new EmailDto();
+                emailDto.setUsername(user.getUsername());
+                emailDto.setEmail(user.getEmail());
+                emailDto.setFirstname(user.getFirstname());
+                emailDto.setLastname(user.getLastname());
+                emailSender.send(emailDto);
+            } catch (KafkaFailureException ex) {
+                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "fail to send email request to kafka");
             }
         }
-        try {
-            EmailDto emailDto = new EmailDto();
-            emailDto.setUsername(user.getUsername());
-            emailDto.setEmail(user.getEmail());
-            emailDto.setFirstname(user.getFirstname());
-            emailDto.setLastname(user.getLastname());
-            emailSender.send(emailDto);
-        } catch (KafkaFailureException ex) {
-            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "fail to send email request to kafka");
-        }
+        log.info("User: " + user.getUsername() + " register success!");
 
         return new CommonResponse(HttpStatus.SC_OK, user.getUsername() + " register success!");
     }
