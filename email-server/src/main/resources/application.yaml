@@ -8,7 +8,29 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
 
+
+
+#spring:
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username:
+#    password:
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          connectiontimeout: 5000
+#          timeout: 5000
+#          writetimeout: 5000
+#          starttls:
+#            enable: true
 spring:
+  mail:
+    host: smtp.mailtrap.io
+    port: 2525
+    username: d3cedd8d555c0e
+    password: 82e7317d6e56cf
   kafka:
     bootstrap-servers: 127.0.0.1:9092
     template:
