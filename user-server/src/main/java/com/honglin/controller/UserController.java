@@ -106,8 +106,9 @@ public class UserController {
 
         blogUserDto user1 = new blogUserDto();
         BeanUtils.copyProperties(user, user1);
-        CommonResponse response = blogClient.sync(user1);
-        if (response.getCode() != 200) {
+        Integer response = blogClient.sync(user1);
+
+        if (response != 200) {
             log.error("Error happens at blog server, rollback");
             String deleteUrl = "http://auth-service/deleteUser";
             try {

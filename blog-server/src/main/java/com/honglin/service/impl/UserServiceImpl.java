@@ -2,6 +2,7 @@ package com.honglin.service.impl;
 
 import com.honglin.dao.UserRepo;
 import com.honglin.entity.User;
+import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.service.UserService;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +24,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class, isolation = Isolation.REPEATABLE_READ)
-    public void save(UserDto user) throws Exception {
+    @Transactional(rollbackFor = DuplicateUserException.class, isolation = Isolation.REPEATABLE_READ)
+    public void save(UserDto user) throws DuplicateUserException {
         if (userRepo.findByUsername(user.getUsername()) != null) {
-            throw new Exception("Duplicate username");
+            throw new DuplicateUserException("Duplicate username");
         }
         User newUser = new User();
         BeanUtils.copyProperties(user, newUser);

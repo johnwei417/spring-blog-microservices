@@ -1,8 +1,9 @@
 package com.honglin.contoller;
 
-import com.honglin.common.CommonResponse;
+import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.service.UserService;
 import com.honglin.vo.UserDto;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Slf4j
 public class UserController {
     private final UserService userService;
 
@@ -19,12 +21,14 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public CommonResponse addUser(@RequestBody UserDto userDto) {
+    public Integer addUser(@RequestBody UserDto userDto) {
         try {
             userService.save(userDto);
-        } catch (Exception e) {
-            return new CommonResponse(HttpStatus.SC_BAD_REQUEST, userDto.getUsername() + " already exist!");
+        } catch (DuplicateUserException e) {
+            log.error(userDto.getUsername() + " already exist!");
+            return HttpStatus.SC_INTERNAL_SERVER_ERROR;
         }
-        return new CommonResponse(HttpStatus.SC_OK, userDto.getUsername() + " add to blog success");
+
+        return HttpStatus.SC_OK;
     }
 }
