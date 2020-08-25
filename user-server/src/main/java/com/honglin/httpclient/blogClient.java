@@ -14,7 +14,7 @@ public interface blogClient {
      * @param blogUserDto
      * @return
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/addUser", consumes = "application/json")
+    @RequestMapping(method = RequestMethod.POST, value = "/users/addUser", consumes = "application/json")
     Integer sync(blogUserDto blogUserDto);
 
 }

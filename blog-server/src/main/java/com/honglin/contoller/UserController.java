@@ -1,16 +1,20 @@
 package com.honglin.contoller;
 
+import com.honglin.entity.User;
 import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.service.UserService;
-import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
+@RequestMapping("/users")
 @Slf4j
 public class UserController {
     private final UserService userService;
@@ -21,14 +25,28 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public Integer addUser(@RequestBody UserDto userDto) {
+    public Integer addUser(@RequestBody User user) {
         try {
-            userService.save(userDto);
+            userService.registerUser(user);
         } catch (DuplicateUserException e) {
-            log.error(userDto.getUsername() + " already exist!");
+            log.error(user.getUsername() + " already exist!");
             return HttpStatus.SC_INTERNAL_SERVER_ERROR;
         }
 
         return HttpStatus.SC_OK;
     }
+
+    @GetMapping("/searchAllUsers")
+    public List<User> list(@RequestParam(value = "async", required = false) boolean async,
+                           @RequestParam(value = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                           @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
+                           @RequestParam(value = "username", required = false, defaultValue = "") String username
+    ) {
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        Page<User> page = userService.listUsersByNameLike(username, pageable);
+        List<User> list = page.getContent();    // get data at current page
+        return list;
+    }
+
 }

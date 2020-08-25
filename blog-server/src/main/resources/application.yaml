@@ -11,6 +11,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+  data:
+    elasticsearch:
+      cluster-nodes: localhost:9300
+      properties:
+        transport:
+          tcp:
+            connect_timeout: 10s
+      cluster-name: myElasticsearch
+elasticsearch:
+  host: localhost
+  port: 9300
 
 security:
   oauth2:
@@ -32,6 +43,7 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+
 
 logging:
   level:

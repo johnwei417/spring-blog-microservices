@@ -1,39 +1,72 @@
 package com.honglin.service.impl;
 
-import com.honglin.dao.UserRepo;
+import com.honglin.dao.UserRepository;
 import com.honglin.entity.User;
 import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.service.UserService;
-import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final UserRepo userRepo;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepo userRepo) {
-        this.userRepo = userRepo;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+
+    @Override
+    @Transactional
+    public User saveOrUpateUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
     @Transactional(rollbackFor = DuplicateUserException.class, isolation = Isolation.REPEATABLE_READ)
-    public void save(UserDto user) throws DuplicateUserException {
-        if (userRepo.findByUsername(user.getUsername()) != null) {
+    public User registerUser(User user) throws DuplicateUserException {
+        if (userRepository.findByUsername(user.getUsername()) != null) {
             throw new DuplicateUserException("Duplicate username");
         }
-        User newUser = new User();
-        BeanUtils.copyProperties(user, newUser);
-        userRepo.save(newUser);
-
+        userRepository.save(user);
         log.info(user.getUsername() + " added to db successfully");
+        return user;
     }
+
+    @Transactional
+    @Override
+    public void removeUser(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        return userRepository.findById(id).get();
+    }
+
+    @Override
+    public Page<User> listUsersByNameLike(String name, Pageable pageable) {
+        name = "%" + name + "%";
+        Page<User> users = userRepository.findByUsernameLike(name, pageable);
+        return users;
+    }
+
+
+    @Override
+    public List<User> listUsersByUsernames(Collection<String> usernames) {
+        return userRepository.findByUsernameIn(usernames);
+    }
+
 
 }

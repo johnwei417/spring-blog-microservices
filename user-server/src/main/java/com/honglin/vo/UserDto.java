@@ -27,13 +27,11 @@ public class UserDto {
     @NotNull
     private String lastname;
 
-    @Email
+    @Email(message = "format of email is not correct")
     @NotNull
     @NotBlank
     private String email;
 
-    private byte[] avatar;
-
-    private String profile;
+    private String avatar;
 
 }

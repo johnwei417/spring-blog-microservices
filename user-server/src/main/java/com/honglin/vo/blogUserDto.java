@@ -12,11 +12,8 @@ public class blogUserDto {
 
     private String lastname;
 
-    private byte[] avatar;
+    private String avatar;
 
     private String email;
-
-    private String profile;
-
 
 }

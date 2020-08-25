@@ -8,10 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
-@Table(name = "user")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +17,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long id;
 
     @Column(unique = true)
     private String username;
@@ -30,16 +28,11 @@ public class User {
     @Column
     private String lastname;
 
-    @Column(name = "avatar", columnDefinition = "BLOB")
-    @Lob
-    private byte[] avatar;
+    @Column
+    private String avatar;
 
     @Column
     private String email;
-
-
-    @Column(name = "profile", columnDefinition = "text")
-    private String profile;
 
     @Column
     @CreationTimestamp
@@ -47,8 +40,5 @@ public class User {
     @JsonIgnore
     private Date registeredAt;
 
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    private List<Post> postList;
 
 }
