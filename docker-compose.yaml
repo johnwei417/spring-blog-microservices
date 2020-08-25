@@ -1,0 +1,142 @@
+version: '2.2'
+services:
+  mysql:
+    networks:
+      - es7net
+    restart: on-failure
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "wei000311"
+      MYSQL_USER: 'honglin'
+      MYSQL_PASS: 'wei000311'
+    image: "mysql:latest"
+    volumes:
+      - "/Users/honglinwei/Documents/mysql/db:/var/lib/mysql"
+      - "/Users/honglinwei/Documents/mysql/conf/my.cnf:/etc/my.cnf"
+      - "/Users/honglinwei/Documents/mysql/init:/docker-entrypoint-initdb.d/"
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: "redis"
+    container_name: redis
+    restart: on-failure
+    ports:
+     - 6379:6379
+    command: redis-server --requirepass jojowei
+    volumes:
+     - /Users/honglinwei/Documents/redis/data:/var/lib/redis
+     - /Users/honglinwei/Documents/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+     - es7net
+ 
+  zookeeper:
+    image: zookeeper
+    restart: on-failure
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+    - 2181:2181
+    volumes:
+    - "/Users/honglinwei/Documents/zookeeper/data:/data"
+    - "/Users/honglinwei/Documents/zookeeper/datalog:/datalog"
+    networks:
+    - es7net
+  
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    restart: on-failure
+    hostname: kafka
+    links:
+    - zookeeper:zk
+    ports:
+    - "9092:9092"
+    - "9093:9093"
+    environment:
+     - KAFKA_ADVERTISED_HOST_NAME=kafka
+     - KAFKA_ZOOKEEPER_CONNECT=zk:2181
+     - JMX_PORT=9093
+     - KAFKA_ADVERTISED_PORT=9092
+     - KAFKA_DELETE_TOPIC_ENABLE=true
+     - KAFKA_LOG_RETENTION_HOURS=1
+     - KAFKA_MESSAGE_MAX_BYTES=10000000
+     - KAFKA_REPLICA_FETCH_MAX_BYTES=10000000
+     - KAFKA_GROUP_MAX_SESSION_TIMEOUT_MS=60000
+     - KAFKA_NUM_PARTITIONS=2
+     - KAFKA_DELETE_RETENTION_MS=1000
+    volumes:
+    - /Users/honglinwei/Documents/kafka/logs:/kafka
+    networks:
+    - es7net
+    
+  cerebro:
+    image: lmenezes/cerebro:0.8.3
+    container_name: cerebro
+    ports:
+      - "9000:9000"
+    command:
+      - -Dhosts.0.host=http://elasticsearch:9200
+    networks:
+      - es7net
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.1.0
+    container_name: kibana7
+    environment:
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
+    ports:
+      - "5601:5601"
+    networks:
+      - es7net
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.0
+    container_name: es7_01
+    environment:
+      - cluster.name=myElasticsearch
+      - node.name=es7_01
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - discovery.seed_hosts=es7_01,es7_02
+      - cluster.initial_master_nodes=es7_01,es7_02
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /Users/honglinwei/Documents/es/es7data1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - es7net
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.1.0
+    container_name: es7_02
+    environment:
+      - cluster.name=myElasticsearch
+      - node.name=es7_02
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - discovery.seed_hosts=es7_01,es7_02
+      - cluster.initial_master_nodes=es7_01,es7_02
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /Users/honglinwei/Documents/es/es7data2:/usr/share/elasticsearch/data
+    networks:
+      - es7net
+
+
+volumes:
+  es7data1:
+    driver: local
+  es7data2:
+    driver: local
+
+networks:
+  es7net:
+    driver: bridge
