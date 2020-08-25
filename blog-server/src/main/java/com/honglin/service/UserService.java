@@ -11,6 +11,14 @@ import java.util.List;
 
 public interface UserService {
     /**
+     * find user by username
+     *
+     * @param username
+     * @return
+     */
+    User findUserByUsername(String username);
+
+    /**
      * add, edit, save user
      *
      * @param user

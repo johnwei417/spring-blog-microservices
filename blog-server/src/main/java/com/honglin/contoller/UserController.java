@@ -45,7 +45,7 @@ public class UserController {
 
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         Page<User> page = userService.listUsersByNameLike(username, pageable);
-        List<User> list = page.getContent();    // get data at current page
+        List<User> list = page.getContent();    // get user data at current page
         return list;
     }
 

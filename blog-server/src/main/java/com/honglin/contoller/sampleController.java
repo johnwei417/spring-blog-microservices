@@ -18,7 +18,7 @@ public class sampleController {
     @GetMapping("/test2")
     public String hello2(Principal principal) {
         //System.out.println("User: "+username +" logging");
-        String output = principal.toString();
+        String output = principal.getName();
         return "User: " + output;
     }
 }

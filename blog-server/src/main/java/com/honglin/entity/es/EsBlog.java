@@ -33,6 +33,7 @@ public class EsBlog implements Serializable {
     private Integer commentSize = 0;
     @Field(type = FieldType.Integer)
     private Integer voteSize = 0;
+    @Field(type = FieldType.Keyword)
     private String tags;
 
     protected EsBlog() {
