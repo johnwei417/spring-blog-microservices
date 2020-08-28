@@ -6,9 +6,9 @@ services:
     restart: on-failure
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "wei000311"
+      MYSQL_ROOT_PASSWORD: "jojowei"
       MYSQL_USER: 'honglin'
-      MYSQL_PASS: 'wei000311'
+      MYSQL_PASS: 'jojowei'
     image: "mysql:latest"
     volumes:
       - "/Users/honglinwei/Documents/mysql/db:/var/lib/mysql"
@@ -16,6 +16,24 @@ services:
       - "/Users/honglinwei/Documents/mysql/init:/docker-entrypoint-initdb.d/"
     ports:
       - "3306:3306"
+
+  mongodb:
+    image: "mongo:latest"
+    container_name: 'monogdb'
+    networks:
+      - es7net
+    environment:
+      - MONGO_INITDB_DATABASE=blog-file-server
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=jojowei
+    volumes:
+      - /Users/honglinwei/Documents/mongo/data/db/:/data/db/
+      - /Users/honglinwei/Documents/mongo/mongod.conf:/etc/mongod.conf
+      - /Users/honglinwei/Documents/mongo/data/log/:/var/log/mongodb/
+      - /Users/honglinwei/Documents/mongo/initdb.d/:/docker-entrypoint-initdb.d/
+    ports:
+      - "27017:27017"
+
 
   redis:
     image: "redis"
