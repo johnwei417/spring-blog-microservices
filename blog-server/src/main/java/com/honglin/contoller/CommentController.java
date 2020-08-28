@@ -33,7 +33,7 @@ public class CommentController {
      * @param
      * @return
      */
-    @GetMapping
+    @GetMapping("/getListOfComments")
     public CommonResponse<CommentListVO> listComments(@RequestParam(value = "blogId", required = true) Long blogId, Principal principal) {
         Blog blog = blogService.getBlogById(blogId);
         List<Comment> comments = blog.getComments();
@@ -56,12 +56,13 @@ public class CommentController {
      * @param commentContent
      * @return
      */
-    @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_USER')")
-    public CommonResponse createComment(Long blogId, String commentContent) {
+    @PostMapping("/createComment")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
+    public CommonResponse createComment(@RequestParam(value = "blogId", required = true) Long blogId,
+                                        @RequestParam(value = "commentContent", required = true) String commentContent, Principal principal) {
 
         try {
-            blogService.createComment(blogId, commentContent);
+            blogService.createComment(blogId, commentContent, principal);
         } catch (ConstraintViolationException e) {
             return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (Exception e) {

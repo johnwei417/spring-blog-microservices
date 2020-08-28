@@ -5,12 +5,15 @@ import com.honglin.entity.*;
 import com.honglin.entity.es.EsBlog;
 import com.honglin.service.BlogService;
 import com.honglin.service.EsBlogService;
+import com.honglin.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
 
 
 @Service
@@ -21,6 +24,9 @@ public class BlogServiceImpl implements BlogService {
 
     @Autowired
     private BlogRepository blogRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Transactional
     @Override
@@ -79,9 +85,9 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public Blog createComment(Long blogId, String commentContent) {
+    public Blog createComment(Long blogId, String commentContent, Principal principal) {
         Blog originalBlog = blogRepository.findById(blogId).get();
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.findUserByUsername(principal.getName());
         Comment comment = new Comment(user, commentContent);
         originalBlog.addComment(comment);
         return this.saveBlog(originalBlog);

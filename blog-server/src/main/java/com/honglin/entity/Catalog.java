@@ -12,13 +12,13 @@ import java.io.Serializable;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Data// 实体
+@Data
 public class Catalog implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Id // 主键
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // 自增长策略
-    private Long id; // 用户的唯一标识
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotEmpty(message = "name of catalog cannot be empty")
     @Size(min = 2, max = 30)
