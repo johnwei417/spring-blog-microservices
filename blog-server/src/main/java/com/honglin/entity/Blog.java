@@ -21,7 +21,7 @@ public class Blog implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @NotNull(message = "title cannot be null")
     @Size(min = 2, max = 50)

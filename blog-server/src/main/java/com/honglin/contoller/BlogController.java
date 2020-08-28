@@ -1,22 +1,25 @@
 package com.honglin.contoller;
 
 import com.honglin.common.CommonResponse;
+import com.honglin.entity.Blog;
 import com.honglin.entity.User;
 import com.honglin.entity.es.EsBlog;
+import com.honglin.service.BlogService;
 import com.honglin.service.EsBlogService;
+import com.honglin.service.UserService;
 import com.honglin.vo.BlogVO;
 import com.honglin.vo.TagVO;
 import org.apache.http.HttpStatus;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -25,6 +28,12 @@ public class BlogController {
 
     @Autowired
     private EsBlogService esBlogService;
+
+    @Autowired
+    private BlogService blogService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/listBlogs")
     public CommonResponse listEsBlogs(
@@ -74,5 +83,23 @@ public class BlogController {
         }
 
         return new CommonResponse<>(HttpStatus.SC_OK, "query blogs success!", list);
+    }
+
+    @PostMapping("/createBlog")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
+    public CommonResponse save(@RequestBody Blog blog, Principal principal) {
+        if (principal != null) {
+            if (principal.getName() != null) {
+                User user = userService.findUserByUsername(principal.getName());
+                blog.setUser(user);
+                try {
+                    blogService.saveBlog(blog);
+                    return new CommonResponse(HttpStatus.SC_OK, "new blog created success!");
+                } catch (ConstraintViolationException e) {
+                    return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                }
+            }
+        }
+        return new CommonResponse(HttpStatus.SC_UNAUTHORIZED, "UNAUTHORIZED");
     }
 }
