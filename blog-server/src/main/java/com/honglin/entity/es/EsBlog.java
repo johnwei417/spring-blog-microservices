@@ -7,7 +7,8 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
+
 
 @Document(indexName = "blog", type = "blog")
 public class EsBlog implements Serializable {
@@ -26,7 +27,9 @@ public class EsBlog implements Serializable {
     @Field(type = FieldType.Keyword)
     private String avatar;
     @Field(type = FieldType.Date)
-    private Timestamp createTime;
+    private Date createTime;
+    @Field(type = FieldType.Date)
+    private Date updateTime;
     @Field(type = FieldType.Integer)
     private Integer readSize = 0;
     @Field(type = FieldType.Integer)
@@ -39,8 +42,8 @@ public class EsBlog implements Serializable {
     protected EsBlog() {
     }
 
-    public EsBlog(Long blogId, String title, String summary, String content, String username, String avatar, Timestamp createTime,
-                  Integer readSize, Integer commentSize, Integer voteSize, String tags) {
+    public EsBlog(Long blogId, String title, String summary, String content, String username, String avatar, Date createTime,
+                  Date updateTime, Integer readSize, Integer commentSize, Integer voteSize, String tags) {
         this.blogId = blogId;
         this.title = title;
         this.summary = summary;
@@ -48,6 +51,7 @@ public class EsBlog implements Serializable {
         this.username = username;
         this.avatar = avatar;
         this.createTime = createTime;
+        this.updateTime = updateTime;
         this.readSize = readSize;
         this.commentSize = commentSize;
         this.voteSize = voteSize;
@@ -66,6 +70,7 @@ public class EsBlog implements Serializable {
         this.commentSize = blog.getCommentSize();
         this.voteSize = blog.getVoteSize();
         this.tags = blog.getTags();
+        this.updateTime = blog.getUpdateTime();
     }
 
     public void update(Blog blog) {
@@ -75,7 +80,8 @@ public class EsBlog implements Serializable {
         this.content = blog.getContent();
         this.username = blog.getUser().getUsername();
         this.avatar = blog.getUser().getAvatar();
-        this.createTime = blog.getCreateTime();
+//        this.createTime = blog.getCreateTime();
+        this.updateTime = blog.getUpdateTime();
         this.readSize = blog.getReadSize();
         this.commentSize = blog.getCommentSize();
         this.voteSize = blog.getVoteSize();
@@ -123,12 +129,20 @@ public class EsBlog implements Serializable {
         this.summary = summary;
     }
 
-    public Timestamp getCreateTime() {
+    public Date getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Timestamp createTime) {
+    public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 
     public Integer getReadSize() {

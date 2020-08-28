@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -95,6 +97,28 @@ public class BlogController {
                 try {
                     blogService.saveBlog(blog);
                     return new CommonResponse(HttpStatus.SC_OK, "new blog created success!");
+                } catch (ConstraintViolationException e) {
+                    return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                }
+            }
+        }
+        return new CommonResponse(HttpStatus.SC_UNAUTHORIZED, "UNAUTHORIZED");
+    }
+
+    @PostMapping("/removeBlog")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
+    public CommonResponse removeBlog(@RequestParam Long blogId, Principal principal) {
+        if (principal != null) {
+            //verify the people who want delete blog is the owner of this blog
+            //and allow admin to delete blog as well
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            boolean hasAdminRole = authentication.getAuthorities().stream()
+                    .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
+            if (blogService.getBlogById(blogId).getUser().getUsername().equals(principal.getName()) || hasAdminRole) {
+                try {
+                    blogService.removeBlog(blogId);
+                    return new CommonResponse(HttpStatus.SC_OK, "remove blog success!");
                 } catch (ConstraintViolationException e) {
                     return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
                 }

@@ -4,13 +4,14 @@ import com.github.rjeschke.txtmark.Processor;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 
@@ -51,9 +52,13 @@ public class Blog implements Serializable {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column
     @CreationTimestamp
-    private Timestamp createTime;
+    private Date createTime;
+
+    @Column
+    @UpdateTimestamp
+    private Date updateTime;
 
     @Column(name = "readSize")
     private Integer readSize = 0; // read count
@@ -129,9 +134,14 @@ public class Blog implements Serializable {
         this.user = user;
     }
 
-    public Timestamp getCreateTime() {
+    public Date getCreateTime() {
         return createTime;
     }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
 
     public String getHtmlContent() {
         return htmlContent;
