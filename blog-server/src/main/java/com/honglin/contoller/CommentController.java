@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/comments")
@@ -82,23 +83,26 @@ public class CommentController {
     public CommonResponse delete(@PathVariable("id") Long id, Long blogId, Principal principal) {
 
         boolean isOwner = false;
-        User user = commentService.getCommentById(id).getUser();
-
-        if (principal != null && user.getUsername().equals(principal.getName())) {
-            isOwner = true;
-        }
-
-        if (!isOwner) {
-            return new CommonResponse(HttpStatus.SC_UNAUTHORIZED, "UNAUTHORIZED");
-        }
-
         try {
-            blogService.removeComment(blogId, id);
-            commentService.removeComment(id);
-        } catch (ConstraintViolationException e) {
-            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-        } catch (Exception e) {
-            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            User user = commentService.getCommentById(id).getUser();
+            if (principal != null && user.getUsername().equals(principal.getName())) {
+                isOwner = true;
+            }
+
+            if (!isOwner) {
+                return new CommonResponse(HttpStatus.SC_UNAUTHORIZED, "UNAUTHORIZED");
+            }
+
+            try {
+                blogService.removeComment(blogId, id);
+                commentService.removeComment(id);
+            } catch (ConstraintViolationException e) {
+                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            } catch (Exception e) {
+                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        } catch (NoSuchElementException e) {
+            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "No value represent");
         }
 
         return new CommonResponse(HttpStatus.SC_OK, "delete comment success!");
