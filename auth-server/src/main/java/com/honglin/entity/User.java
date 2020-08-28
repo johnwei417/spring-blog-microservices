@@ -52,7 +52,6 @@ public class User implements UserDetails {
 
     @Column
     @CreationTimestamp
-    @JsonIgnore
     private Date createTime;
 
     @Column

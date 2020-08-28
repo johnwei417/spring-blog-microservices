@@ -1,6 +1,5 @@
 package com.honglin.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,7 +36,6 @@ public class User {
     @Column
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
-    @JsonIgnore
     private Date registeredAt;
 
 
