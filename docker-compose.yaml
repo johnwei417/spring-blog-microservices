@@ -44,8 +44,8 @@ services:
       - 6379:6379
     command: redis-server --requirepass jojowei
     volumes:
-      - /Users/honglinwei/Documents/redis/data:/var/lib/redis
-      - /Users/honglinwei/Documents/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - "/Users/honglinwei/Documents/redis/data:/var/lib/redis"
+      - "./config/redis.conf:/usr/local/etc/redis/redis.conf"
     networks:
       - es7net
 
