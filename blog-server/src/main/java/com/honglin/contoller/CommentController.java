@@ -11,6 +11,8 @@ import org.apache.http.HttpStatus;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -82,6 +84,11 @@ public class CommentController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public CommonResponse delete(@PathVariable("id") Long id, Long blogId, Principal principal) {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean hasAdminRole = authentication.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
+
         boolean isOwner = false;
         try {
             User user = commentService.getCommentById(id).getUser();
@@ -89,7 +96,7 @@ public class CommentController {
                 isOwner = true;
             }
 
-            if (!isOwner) {
+            if (!isOwner && !hasAdminRole) {
                 return new CommonResponse(HttpStatus.SC_UNAUTHORIZED, "UNAUTHORIZED");
             }
 
