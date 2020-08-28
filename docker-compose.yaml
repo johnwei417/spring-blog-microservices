@@ -19,6 +19,7 @@ services:
 
   mongodb:
     image: "mongo:latest"
+    restart: on-failure
     container_name: 'monogdb'
     networks:
       - es7net
