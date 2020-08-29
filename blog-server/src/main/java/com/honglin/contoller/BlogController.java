@@ -118,7 +118,13 @@ public class BlogController {
 
             boolean hasAdminRole = authentication.getAuthorities().stream()
                     .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
-            if (blogService.getBlogById(blogId).getUser().getUsername().equals(isLogin.get().getName()) || hasAdminRole) {
+            Optional<Blog> deleteBlog;
+            try {
+                deleteBlog = Optional.of(blogService.getBlogById(blogId));
+            } catch (NullPointerException ex) {
+                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "blog: " + blogId + " not exist");
+            }
+            if (deleteBlog.get().getUser().getUsername().equals(isLogin.get().getName()) || hasAdminRole) {
                 try {
                     blogService.removeBlog(blogId);
                     return new CommonResponse(HttpStatus.SC_OK, "remove blog success!");

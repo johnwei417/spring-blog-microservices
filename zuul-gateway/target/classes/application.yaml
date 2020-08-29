@@ -29,7 +29,7 @@ eureka:
 
 
 ribbon:
-  ReadTimeout: 10000
+  ReadTimeout: 60000
 
 zuul:
   routes:
@@ -61,3 +61,19 @@ zuul:
           refresh-interval: 2
           type:
             - origin
+
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+    restart:
+      enabled: true
+
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 60000
