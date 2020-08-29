@@ -49,3 +49,7 @@ logging:
   level:
     org.springframework.orm.jpa: DEBUG
     org.springframework.transaction: DEBUG
+
+file:
+  server:
+    url: http://localhost:8792/upload

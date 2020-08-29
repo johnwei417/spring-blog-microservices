@@ -1,8 +1,9 @@
 package com.honglin.entity;
 
-import lombok.AllArgsConstructor;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
@@ -10,9 +11,8 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Catalog implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -27,10 +27,7 @@ public class Catalog implements Serializable {
 
     @OneToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
-    public Catalog(User user, String name) {
-        this.name = name;
-        this.user = user;
-    }
 }

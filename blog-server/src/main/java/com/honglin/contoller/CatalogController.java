@@ -6,7 +6,6 @@ import com.honglin.entity.User;
 import com.honglin.service.CatalogService;
 import com.honglin.service.UserService;
 import com.honglin.vo.CatalogListVO;
-import com.honglin.vo.CatalogVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.hibernate.exception.ConstraintViolationException;
@@ -64,13 +63,9 @@ public class CatalogController {
      * @return
      */
     @PostMapping
-    @PreAuthorize("authentication.name.equals(#catalogVO.username)")
-    public CommonResponse create(@RequestBody CatalogVO catalogVO) {
+    public CommonResponse create(@RequestBody Catalog catalog, Principal principal) {
 
-        String username = catalogVO.getUsername();
-        Catalog catalog = catalogVO.getCatalog();
-
-        User user = (User) userService.findUserByUsername(username);
+        User user = (User) userService.findUserByUsername(principal.getName());
 
         try {
             catalog.setUser(user);
