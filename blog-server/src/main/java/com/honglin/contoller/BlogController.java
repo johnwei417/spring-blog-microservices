@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/blogs")
@@ -90,9 +91,10 @@ public class BlogController {
     @PostMapping("/createBlog")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public CommonResponse save(@RequestBody Blog blog, Principal principal) {
-        if (principal != null) {
+        Optional<Principal> isLogin = Optional.of(principal);
+        if (isLogin.isPresent()) {
             if (principal.getName() != null) {
-                User user = userService.findUserByUsername(principal.getName());
+                User user = userService.findUserByUsername(isLogin.get().getName());
                 blog.setUser(user);
                 try {
                     blogService.saveBlog(blog);
@@ -108,14 +110,15 @@ public class BlogController {
     @PostMapping("/removeBlog")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")
     public CommonResponse removeBlog(@RequestParam Long blogId, Principal principal) {
-        if (principal != null) {
+        Optional<Principal> isLogin = Optional.of(principal);
+        if (isLogin.isPresent()) {
             //verify the people who want delete blog is the owner of this blog
             //and allow admin to delete blog as well
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             boolean hasAdminRole = authentication.getAuthorities().stream()
                     .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
-            if (blogService.getBlogById(blogId).getUser().getUsername().equals(principal.getName()) || hasAdminRole) {
+            if (blogService.getBlogById(blogId).getUser().getUsername().equals(isLogin.get().getName()) || hasAdminRole) {
                 try {
                     blogService.removeBlog(blogId);
                     return new CommonResponse(HttpStatus.SC_OK, "remove blog success!");

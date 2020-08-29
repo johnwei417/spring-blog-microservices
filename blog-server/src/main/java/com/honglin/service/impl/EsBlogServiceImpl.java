@@ -14,7 +14,6 @@ import org.elasticsearch.search.aggregations.BucketOrder;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,12 +36,16 @@ import static org.elasticsearch.search.aggregations.AggregationBuilders.terms;
 public class EsBlogServiceImpl implements EsBlogService {
     private static final Pageable TOP_5_PAGEABLE = PageRequest.of(0, 5);
     private static final String EMPTY_KEYWORD = "";
-    @Autowired
-    private EsBlogRepository esBlogRepository;
-    @Autowired
-    private ElasticsearchTemplate elasticsearchTemplate;
-    @Autowired
-    private UserService userService;
+
+    private final EsBlogRepository esBlogRepository;
+    private final ElasticsearchTemplate elasticsearchTemplate;
+    private final UserService userService;
+
+    public EsBlogServiceImpl(EsBlogRepository esBlogRepository, ElasticsearchTemplate elasticsearchTemplate, UserService userService) {
+        this.esBlogRepository = esBlogRepository;
+        this.elasticsearchTemplate = elasticsearchTemplate;
+        this.userService = userService;
+    }
 
     @Override
     public void removeEsBlog(String id) {

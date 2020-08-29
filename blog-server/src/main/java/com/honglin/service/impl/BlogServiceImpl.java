@@ -6,7 +6,6 @@ import com.honglin.entity.es.EsBlog;
 import com.honglin.service.BlogService;
 import com.honglin.service.EsBlogService;
 import com.honglin.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,19 +13,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.Optional;
 
 
 @Service
 public class BlogServiceImpl implements BlogService {
 
-    @Autowired
-    private EsBlogService esBlogService;
+    private final EsBlogService esBlogService;
 
-    @Autowired
-    private BlogRepository blogRepository;
+    private final BlogRepository blogRepository;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public BlogServiceImpl(EsBlogService esBlogService, BlogRepository blogRepository, UserService userService) {
+        this.esBlogService = esBlogService;
+        this.blogRepository = blogRepository;
+        this.userService = userService;
+    }
 
     @Transactional
     @Override
@@ -57,7 +60,8 @@ public class BlogServiceImpl implements BlogService {
 
     @Override
     public Blog getBlogById(Long id) {
-        return blogRepository.findById(id).get();
+        Optional<Blog> blog = blogRepository.findById(id);
+        return blog.isPresent() ? blog.get() : null;
     }
 
     @Override

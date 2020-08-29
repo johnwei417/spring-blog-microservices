@@ -7,6 +7,7 @@ import com.honglin.service.CatalogService;
 import com.honglin.service.UserService;
 import com.honglin.vo.CatalogListVO;
 import com.honglin.vo.CatalogVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/catalogs")
+@Slf4j
 public class CatalogController {
 
     @Autowired
@@ -37,11 +40,14 @@ public class CatalogController {
     public CommonResponse listCatalog(@RequestParam(value = "username", required = true) String username, Principal principal) {
         User user = (User) userService.findUserByUsername(username);
         List<Catalog> catalogs = catalogService.listCatalogs(user);
-
-        //check if user is owner
         boolean isOwner = false;
-        if (principal != null && user.getUsername().equals(principal.getName())) {
-            isOwner = true;
+        try {
+            Optional<Principal> isLogin = Optional.of(principal);
+            if (isLogin.isPresent() && user.getUsername().equals(isLogin.get().getName())) {
+                isOwner = true;
+            }
+        } catch (NullPointerException e) {
+            log.info("Unknown user trying to get list of catalog");
         }
 
         CatalogListVO catalogListVO = new CatalogListVO();

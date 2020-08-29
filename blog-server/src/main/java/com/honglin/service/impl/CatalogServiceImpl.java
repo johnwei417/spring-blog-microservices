@@ -4,15 +4,17 @@ import com.honglin.dao.CatalogRepository;
 import com.honglin.entity.Catalog;
 import com.honglin.entity.User;
 import com.honglin.service.CatalogService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class CatalogServiceImpl implements CatalogService {
-    @Autowired
-    private CatalogRepository catalogRepository;
+    private final CatalogRepository catalogRepository;
+
+    public CatalogServiceImpl(CatalogRepository catalogRepository) {
+        this.catalogRepository = catalogRepository;
+    }
 
     @Override
     public Catalog saveCatalog(Catalog catalog) {

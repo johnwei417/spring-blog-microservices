@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/comments")
@@ -38,9 +39,13 @@ public class CommentController {
      */
     @GetMapping("/getListOfComments")
     public CommonResponse<CommentListVO> listComments(@RequestParam(value = "blogId", required = true) Long blogId, Principal principal) {
-        Blog blog = blogService.getBlogById(blogId);
-        List<Comment> comments = blog.getComments();
-
+        Optional<Blog> blog;
+        try {
+            blog = Optional.of(blogService.getBlogById(blogId));
+        } catch (NullPointerException ex) {
+            return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, "Blog is not exist!");
+        }
+        List<Comment> comments = blog.get().getComments();
         // check if is owner
         String commentOwner = "";
         if (principal != null) {
@@ -64,8 +69,11 @@ public class CommentController {
     public CommonResponse createComment(@RequestParam(value = "blogId", required = true) Long blogId,
                                         @RequestParam(value = "commentContent", required = true) String commentContent, Principal principal) {
 
+        Optional<Principal> isLogin = Optional.of(principal);
         try {
-            blogService.createComment(blogId, commentContent, principal);
+            if (isLogin.isPresent()) {
+                blogService.createComment(blogId, commentContent, isLogin.get());
+            }
         } catch (ConstraintViolationException e) {
             return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (Exception e) {
@@ -90,9 +98,11 @@ public class CommentController {
                 .anyMatch(r -> r.getAuthority().equals("ROLE_ADMIN"));
 
         boolean isOwner = false;
+
+        Optional<Principal> isLogin = Optional.of(principal);
         try {
             User user = commentService.getCommentById(id).getUser();
-            if (principal != null && user.getUsername().equals(principal.getName())) {
+            if (isLogin.isPresent() && user.getUsername().equals(isLogin.get().getName())) {
                 isOwner = true;
             }
 

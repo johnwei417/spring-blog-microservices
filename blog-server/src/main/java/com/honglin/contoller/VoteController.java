@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/votes")
@@ -55,8 +56,9 @@ public class VoteController {
 
         boolean isOwner = false;
         User user = voteService.getVoteById(id).getUser();
+        Optional<Principal> isLogin = Optional.of(principal);
 //        check if user is valid
-        if (principal != null && user.getUsername().equals(principal.getName())) {
+        if (isLogin.isPresent() && user.getUsername().equals(isLogin.get().getName())) {
             isOwner = true;
         }
 

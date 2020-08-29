@@ -1,5 +1,6 @@
 package com.honglin.contoller;
 
+import com.honglin.common.CommonResponse;
 import com.honglin.entity.User;
 import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.service.UserService;
@@ -37,16 +38,14 @@ public class UserController {
     }
 
     @GetMapping("/searchAllUsers")
-    public List<User> list(@RequestParam(value = "async", required = false) boolean async,
-                           @RequestParam(value = "pageIndex", required = false, defaultValue = "0") int pageIndex,
-                           @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
-                           @RequestParam(value = "username", required = false, defaultValue = "") String username
-    ) {
-
+    public CommonResponse<List<User>> list(@RequestParam(value = "async", required = false) boolean async,
+                                           @RequestParam(value = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+                                           @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
+                                           @RequestParam(value = "username", required = false, defaultValue = "") String username) {
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         Page<User> page = userService.listUsersByNameLike(username, pageable);
         List<User> list = page.getContent();    // get user data at current page
-        return list;
+        return new CommonResponse<>(HttpStatus.SC_OK, "Search users success!", list);
     }
 
 }
