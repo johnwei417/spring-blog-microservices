@@ -140,7 +140,7 @@ services:
       - cluster.name=myElasticsearch
       - node.name=es7_01
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - discovery.seed_hosts=es7_01,es7_02
       - cluster.initial_master_nodes=es7_01,es7_02
     ulimits:
@@ -161,7 +161,7 @@ services:
       - cluster.name=myElasticsearch
       - node.name=es7_02
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - discovery.seed_hosts=es7_01,es7_02
       - cluster.initial_master_nodes=es7_01,es7_02
     ulimits:
