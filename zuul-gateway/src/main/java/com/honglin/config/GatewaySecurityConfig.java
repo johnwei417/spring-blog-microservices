@@ -26,7 +26,6 @@ public class GatewaySecurityConfig extends ResourceServerConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers(" /token/**", "/token/oauth/token", "/user/register", "/user/login", "/blog/users/searchAllUsers", "/blog/blogs/**",
                         "/blog/comments/getListOfComments").permitAll()
-                .antMatchers("/blog/**").hasAnyRole("ADMIN", "CUSTOMER")
                 .anyRequest().authenticated();
     }
 
