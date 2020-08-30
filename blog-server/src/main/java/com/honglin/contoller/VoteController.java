@@ -32,10 +32,10 @@ public class VoteController {
      */
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CUSTOMER')")  // role based
-    public CommonResponse createVote(Long blogId) {
+    public CommonResponse createVote(Long blogId, Principal principal) {
 
         try {
-            blogService.createVote(blogId);
+            blogService.createVote(blogId, principal);
         } catch (ConstraintViolationException e) {
             return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (Exception e) {

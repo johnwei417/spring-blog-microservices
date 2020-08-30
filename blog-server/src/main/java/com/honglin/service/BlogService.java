@@ -80,7 +80,7 @@ public interface BlogService {
      * @param blogId
      * @return
      */
-    Blog createVote(Long blogId);
+    Blog createVote(Long blogId, Principal principal);
 
     /**
      * cancel vote for blog

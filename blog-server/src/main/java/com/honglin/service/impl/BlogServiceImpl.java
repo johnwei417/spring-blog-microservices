@@ -8,7 +8,6 @@ import com.honglin.service.EsBlogService;
 import com.honglin.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,9 +104,9 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public Blog createVote(Long blogId) {
+    public Blog createVote(Long blogId, Principal principal) {
         Blog originalBlog = blogRepository.findById(blogId).get();
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userService.findUserByUsername(principal.getName());
         Vote vote = new Vote(user);
         boolean isExist = originalBlog.addVote(vote);
         if (isExist) {
