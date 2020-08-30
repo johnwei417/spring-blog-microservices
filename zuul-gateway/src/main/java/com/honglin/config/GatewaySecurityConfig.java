@@ -25,7 +25,7 @@ public class GatewaySecurityConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
                 .antMatchers("/user/register", "/user/login", "/blog/users/searchAllUsers", "/blog/blogs/**",
-                        "/blog/comments/getListOfComments").permitAll()
+                        "/blog/comments/getListOfComments", "/fileStorage/upload").permitAll()
                 .anyRequest().authenticated();
     }
 

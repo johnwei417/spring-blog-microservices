@@ -86,7 +86,8 @@ public class ProfileController {
     @PreAuthorize("authentication.name.equals(#username)")
     public CommonResponse avatar(@PathVariable("username") String username) {
         User user = userService.findUserByUsername(username);
-        return new CommonResponse(HttpStatus.SC_OK, "load avatar info success");
+        String avatarUrl = user.getAvatar();
+        return new CommonResponse(HttpStatus.SC_OK, "load avatar info success", avatarUrl);
     }
 
     /**
