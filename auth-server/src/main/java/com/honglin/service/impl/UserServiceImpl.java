@@ -57,4 +57,12 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         log.info(userDto.getUsername() + " remove from db successfully");
     }
 
+    @Override
+    @Transactional(rollbackFor = RuntimeException.class, isolation = Isolation.SERIALIZABLE)
+    public void updatePassword(User user) {
+        User updateUser = userRep.findByUsername(user.getUsername());
+        updateUser.setPassword(user.getPassword());
+        userRep.save(updateUser);
+    }
+
 }

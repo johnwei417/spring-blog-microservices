@@ -11,6 +11,11 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
@@ -23,6 +28,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,13 +134,23 @@ public class UserController {
             log.error("Error happens at blog server, rollback");
             String deleteUrl = "http://auth-service/deleteUser";
             try {
-                restTemplate.postForObject(deleteUrl, request, CommonResponse.class);
-                log.info(userDto.get().getUsername() + " remove from auth server db");
+                List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+                messageConverters.add(new FormHttpMessageConverter());
+                messageConverters.add(new StringHttpMessageConverter());
+                messageConverters.add(new MappingJackson2HttpMessageConverter());
+                restTemplate.setMessageConverters(messageConverters);
+
+                Integer deleteReponse = restTemplate.postForObject(deleteUrl, request, Integer.class);
+                if (deleteReponse == 200) {
+                    log.info(userDto.get().getUsername() + " remove from auth server db");
+                } else {
+                    log.error("Unable to remove " + userDto.get().getUsername() + " from auth server db");
+                }
                 return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, userDto.get().getUsername() + " failed to register");
             } catch (HttpClientErrorException ex) {
                 return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at auth server failed");
             }
-        } else {
+        } else { //success
             try {
                 EmailDto emailDto = new EmailDto();
                 emailDto.setUsername(userDto.get().getUsername());
@@ -149,5 +165,29 @@ public class UserController {
         log.info("User: " + userDto.get().getUsername() + " register success!");
 
         return new CommonResponse(HttpStatus.SC_OK, userDto.get().getUsername() + " register success!");
+    }
+
+
+    @PostMapping("/changePassword")
+    public CommonResponse changePassword(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
+        String url = "http://auth-service/changePassword?username=" + username;
+        try {
+            log.info(username + " is trying to change password");
+            List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+            messageConverters.add(new FormHttpMessageConverter());
+            messageConverters.add(new StringHttpMessageConverter());
+            messageConverters.add(new MappingJackson2HttpMessageConverter());
+            restTemplate.setMessageConverters(messageConverters);
+            Integer response = restTemplate.postForObject(url, changePasswordVO, Integer.class);
+            System.out.println(response);
+            log.info(username + " already communicate with auth server");
+            if (response != 200) {
+                return new CommonResponse(HttpStatus.SC_NOT_ACCEPTABLE, "Password not match");
+            }
+        } catch (HttpClientErrorException ex) {
+            return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "failed to call auth server");
+        }
+
+        return new CommonResponse(HttpStatus.SC_OK, username + " change password success!");
     }
 }
