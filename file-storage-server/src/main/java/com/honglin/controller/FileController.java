@@ -6,15 +6,14 @@ import com.honglin.service.FileService;
 import com.honglin.utils.MD5Util;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -24,11 +23,6 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @Value("${eureka.instance.hostname}")
-    private String serverAddress;
-
-    @Value("${server.port}")
-    private String serverPort;
 
     @RequestMapping(value = "/")
     public CommonResponse index() {
@@ -51,7 +45,7 @@ public class FileController {
     }
 
     /**
-     * get file info
+     * get file as attachment
      *
      * @param id
      * @return
@@ -103,34 +97,6 @@ public class FileController {
     }
 
     /**
-     * upload file
-     *
-     * @param file
-     * @param redirectAttributes
-     * @return
-     */
-    @PostMapping("/")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
-                                   RedirectAttributes redirectAttributes) {
-
-        try {
-            File f = new File(file.getOriginalFilename(), file.getContentType(), file.getSize(), file.getBytes());
-            f.setMd5(MD5Util.getMD5(file.getInputStream()));
-            fileService.saveFile(f);
-        } catch (IOException | NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
-            redirectAttributes.addFlashAttribute("message",
-                    "Your " + file.getOriginalFilename() + " is wrong!");
-            return "redirect:/";
-        }
-
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
-
-        return "redirect:/";
-    }
-
-    /**
      * upload file api
      *
      * @param file
@@ -138,13 +104,20 @@ public class FileController {
      */
     @PostMapping("/upload")
     @ResponseBody
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
+                                                   @RequestParam(value = "id", required = false) String id,
+                                                   Principal principal) {
         File returnFile = null;
         try {
-            File f = new File(file.getOriginalFilename(), file.getContentType(), file.getSize(), file.getBytes());
+            File f = new File(file.getOriginalFilename(), file.getContentType(), file.getSize(), file.getBytes(), principal.getName());
             f.setMd5(MD5Util.getMD5(file.getInputStream()));
             returnFile = fileService.saveFile(f);
-            String path = "//" + serverAddress + ":" + serverPort + "/view/" + returnFile.getId();
+            //if id of old files is present in the param, delete old file as well;
+            if (id != null && fileService.getFileById(id) != null
+                    && fileService.getFileById(id).getUsername().equals(principal.getName())) {
+                fileService.removeFile(id);
+            }
+            String path = "http://localhost:10000/fileStorage/view/" + returnFile.getId();
             return ResponseEntity.status(HttpStatus.SC_OK).body(path);
 
         } catch (IOException | NoSuchAlgorithmException ex) {

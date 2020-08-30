@@ -1,5 +1,6 @@
 package com.honglin.config;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -19,12 +20,12 @@ import java.io.IOException;
 @Configuration
 @EnableResourceServer
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class ResourceServiceConfig extends ResourceServerConfigurerAdapter {
+public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/users/addUser", "/users/searchAllUsers", "/blogs/**", "/comments/getListOfComments", "/profiles/global/**").permitAll()
+                .antMatchers("/view/**").permitAll()
                 .anyRequest().authenticated()
                 .and().csrf().disable();
     }
@@ -37,7 +38,7 @@ public class ResourceServiceConfig extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-        resources.resourceId("blog-service").tokenStore(tokenStore());
+        resources.resourceId("file-storage-service").tokenStore(tokenStore());
     }
 
     @Bean
@@ -54,3 +55,4 @@ public class ResourceServiceConfig extends ResourceServerConfigurerAdapter {
         return converter;
     }
 }
+

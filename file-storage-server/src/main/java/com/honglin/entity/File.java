@@ -12,6 +12,7 @@ public class File {
     private String id;
     private String name; // file name
     private String contentType; // file type
+    private String username;
     private long size;
     private Date uploadDate;
     private String md5;
@@ -21,13 +22,13 @@ public class File {
     protected File() {
     }
 
-
-    public File(String name, String contentType, long size, byte[] content) {
+    public File(String name, String contentType, long size, byte[] content, String username) {
         this.name = name;
         this.contentType = contentType;
         this.size = size;
         this.uploadDate = new Date();
         this.content = content;
+        this.username = username;
     }
 
     public String getPath() {
@@ -60,6 +61,14 @@ public class File {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public long getSize() {
@@ -108,12 +117,13 @@ public class File {
                 && java.util.Objects.equals(contentType, fileInfo.contentType)
                 && java.util.Objects.equals(uploadDate, fileInfo.uploadDate)
                 && java.util.Objects.equals(md5, fileInfo.md5)
-                && java.util.Objects.equals(id, fileInfo.id);
+                && java.util.Objects.equals(id, fileInfo.id)
+                && java.util.Objects.equals(username, fileInfo.username);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(name, contentType, size, uploadDate, md5, id);
+        return java.util.Objects.hash(name, contentType, size, uploadDate, md5, id, username);
     }
 
     @Override
@@ -125,7 +135,7 @@ public class File {
                 + ", uploadDate=" + uploadDate
                 + ", md5='" + md5 + '\''
                 + ", id='" + id + '\''
-                + '}';
+                + ", username= " + username + "}";
     }
 }
 

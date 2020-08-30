@@ -31,12 +31,13 @@ public class ProfileController {
      */
     @GetMapping("/global/{username}")
     public CommonResponse userSpace(@PathVariable("username") String username) {
+        Optional<User> user;
         try {
-            Optional<User> user = Optional.of(userService.findUserByUsername(username));
+            user = Optional.of(userService.findUserByUsername(username));
         } catch (NullPointerException ex) {
             return new CommonResponse(HttpStatus.SC_NOT_FOUND, username + " not exist!");
         }
-        return new CommonResponse(HttpStatus.SC_OK, "get " + username + " profile info success!");
+        return new CommonResponse(HttpStatus.SC_OK, "get " + username + " profile info success!", user.get());
     }
 
     /**

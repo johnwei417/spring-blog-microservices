@@ -52,4 +52,4 @@ logging:
 
 file:
   server:
-    url: http://file-storage-service/upload
+    url: http://localhost:10000/fileStorage/upload
