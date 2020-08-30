@@ -7,12 +7,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="blog-server" />
         <module name="email-server" />
         <module name="zuul-gateway" />
-        <module name="eureka-server" />
         <module name="user-server" />
         <module name="auth-server" />
+        <module name="blog-server" />
+        <module name="file-storage-server" />
+        <module name="eureka-server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -21,6 +22,7 @@
       <module name="blog-server" target="1.8" />
       <module name="email-server" target="1.8" />
       <module name="eureka-server" target="1.8" />
+      <module name="file-storage-server" target="1.8" />
       <module name="user-server" target="1.8" />
       <module name="zuul-gateway" target="1.8" />
     </bytecodeTargetLevel>
@@ -32,6 +34,7 @@
       <module name="blog-server" options="-parameters" />
       <module name="email-server" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
+      <module name="file-storage-server" options="-parameters" />
       <module name="user-server" options="-parameters" />
       <module name="zuul-gateway" options="-parameters" />
     </option>

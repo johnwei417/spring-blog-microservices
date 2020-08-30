@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: file-storage-service
+  servlet:
+    multipart:
+      max-file-size: 1024KB
+      max-request-size: 1024KB
+  data:
+    mongodb:
+      host: localhost
+      password: jojowei
+      username: root
+      port: 27017
+      database: blog-file-server
+      authentication-database: admin
+
+server:
+  port: 8792
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+logging:
+  level:
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+

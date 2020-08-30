@@ -10,6 +10,7 @@
         <module>zuul-gateway</module>
         <module>user-server</module>
         <module>email-server</module>
+        <module>file-storage-server</module>
     </modules>
 
     <parent>
