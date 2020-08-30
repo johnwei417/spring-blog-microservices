@@ -24,10 +24,10 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @Value("${server.port}")
+    @Value("${eureka.instance.hostname}")
     private String serverAddress;
 
-    @Value("${eureka.instance.hostname}")
+    @Value("${server.port}")
     private String serverPort;
 
     @RequestMapping(value = "/")
