@@ -197,6 +197,12 @@ public class UserController {
     }
 
     @PostMapping("/changePassword")
+    @HystrixCommand(fallbackMethod = "changePasswordFallBack", commandProperties = {
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "20"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000"),
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
+            @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
+    })
     public CommonResponse changePassword(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
         String url = "http://auth-service/changePassword?username=" + username;
         try {
@@ -218,5 +224,10 @@ public class UserController {
         }
 
         return new CommonResponse(HttpStatus.SC_OK, username + " change password success!");
+    }
+
+    //fallback for change password
+    public CommonResponse changePasswordFallBack(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
+        return new CommonResponse(HttpStatus.SC_NOT_FOUND, "change password service not available");
     }
 }
