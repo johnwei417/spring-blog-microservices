@@ -1,11 +1,12 @@
 package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
-import com.honglin.exceptions.DuplicateUserException;
 import com.honglin.exceptions.KafkaFailureException;
 import com.honglin.httpclient.blogClient;
 import com.honglin.service.KafkaSender;
 import com.honglin.vo.*;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.BeanUtils;
@@ -49,7 +50,14 @@ public class UserController {
         this.restTemplate = restTemplate;
     }
 
+
     @PostMapping("/login")
+    @HystrixCommand(fallbackMethod = "loginFallBack", commandProperties = {
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "20"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000"),
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
+            @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
+    })
     public CommonResponse<TokenInfo> login(@RequestParam(required = true, name = "client_id") String client_id,
                                            @RequestParam(required = true, name = "client_secret") String client_secret,
                                            @RequestBody @Valid Credentials credentials, BindingResult bindingResult) {
@@ -96,8 +104,29 @@ public class UserController {
         }
     }
 
+    //fallback for login
+    public CommonResponse<TokenInfo> loginFallBack(@RequestParam(required = true, name = "client_id") String client_id,
+                                                   @RequestParam(required = true, name = "client_secret") String client_secret,
+                                                   @RequestBody @Valid Credentials credentials, BindingResult bindingResult) {
+        return new CommonResponse(HttpStatus.SC_NOT_FOUND, "login service not available");
+    }
+
+
     @PostMapping("/register")
+    @HystrixCommand(fallbackMethod = "createUserFallBack", commandProperties = {
+            @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "20"),
+            @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000"),
+            @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
+            @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
+    })
     public CommonResponse createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
+
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+        messageConverters.add(new FormHttpMessageConverter());
+        messageConverters.add(new StringHttpMessageConverter());
+        messageConverters.add(new MappingJackson2HttpMessageConverter());
+        restTemplate.setMessageConverters(messageConverters);
+
         Optional<UserDto> userDto;
         try {
             userDto = Optional.of(user);
@@ -118,55 +147,54 @@ public class UserController {
         authDto autDto = new authDto();
         BeanUtils.copyProperties(userDto.get(), autDto);
         HttpEntity<authDto> request = new HttpEntity<>(autDto);
-        try {
-            restTemplate.postForObject(url, request, CommonResponse.class);
+
+
+        Integer feedback = restTemplate.postForObject(url, request, Integer.class);
+        if (feedback != HttpStatus.SC_OK) {
+            return new CommonResponse(HttpStatus.SC_BAD_REQUEST, userDto.get().getUsername() + " already exist");
+        } else {
             log.info("User: " + userDto.get().getUsername() + " added to db in auth server!");
-        } catch (HttpClientErrorException ex) {
-            log.debug(userDto.get().getUsername() + " already exist");
-            throw new DuplicateUserException(userDto.get().getUsername() + " already exist");
-        }
+            blogUserDto user1 = new blogUserDto();
+            BeanUtils.copyProperties(userDto.get(), user1);
+            //call blog server
+            Integer response = blogClient.sync(user1);
 
-        blogUserDto user1 = new blogUserDto();
-        BeanUtils.copyProperties(userDto.get(), user1);
-        Integer response = blogClient.sync(user1);
+            if (response != 200) {
+                log.error("Error happens at blog server, rollback");
+                String deleteUrl = "http://auth-service/deleteUser";
+                try {
 
-        if (response != 200) {
-            log.error("Error happens at blog server, rollback");
-            String deleteUrl = "http://auth-service/deleteUser";
-            try {
-                List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
-                messageConverters.add(new FormHttpMessageConverter());
-                messageConverters.add(new StringHttpMessageConverter());
-                messageConverters.add(new MappingJackson2HttpMessageConverter());
-                restTemplate.setMessageConverters(messageConverters);
-
-                Integer deleteReponse = restTemplate.postForObject(deleteUrl, request, Integer.class);
-                if (deleteReponse == 200) {
-                    log.info(userDto.get().getUsername() + " remove from auth server db");
-                } else {
-                    log.error("Unable to remove " + userDto.get().getUsername() + " from auth server db");
+                    Integer deleteReponse = restTemplate.postForObject(deleteUrl, request, Integer.class);
+                    if (deleteReponse == 200) {
+                        log.info(userDto.get().getUsername() + " remove from auth server db");
+                    } else {
+                        log.error("Unable to remove " + userDto.get().getUsername() + " from auth server db");
+                    }
+                    return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, userDto.get().getUsername() + " failed to register");
+                } catch (HttpClientErrorException ex) {
+                    return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at auth server failed");
                 }
-                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, userDto.get().getUsername() + " failed to register");
-            } catch (HttpClientErrorException ex) {
-                return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at auth server failed");
+            } else { //success
+                try {
+                    EmailDto emailDto = new EmailDto();
+                    emailDto.setUsername(userDto.get().getUsername());
+                    emailDto.setEmail(userDto.get().getEmail());
+                    emailDto.setFirstname(userDto.get().getFirstname());
+                    emailDto.setLastname(userDto.get().getLastname());
+                    emailSender.send(emailDto);
+                } catch (KafkaFailureException ex) {
+                    return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "fail to send email request to kafka");
+                }
             }
-        } else { //success
-            try {
-                EmailDto emailDto = new EmailDto();
-                emailDto.setUsername(userDto.get().getUsername());
-                emailDto.setEmail(userDto.get().getEmail());
-                emailDto.setFirstname(userDto.get().getFirstname());
-                emailDto.setLastname(userDto.get().getLastname());
-                emailSender.send(emailDto);
-            } catch (KafkaFailureException ex) {
-                return new CommonResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "fail to send email request to kafka");
-            }
+            log.info("User: " + userDto.get().getUsername() + " register success!");
         }
-        log.info("User: " + userDto.get().getUsername() + " register success!");
-
         return new CommonResponse(HttpStatus.SC_OK, userDto.get().getUsername() + " register success!");
     }
 
+    //fallback for register
+    public CommonResponse createUserFallBack(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
+        return new CommonResponse(HttpStatus.SC_NOT_FOUND, "register service not available");
+    }
 
     @PostMapping("/changePassword")
     public CommonResponse changePassword(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
@@ -178,8 +206,9 @@ public class UserController {
             messageConverters.add(new StringHttpMessageConverter());
             messageConverters.add(new MappingJackson2HttpMessageConverter());
             restTemplate.setMessageConverters(messageConverters);
+
             Integer response = restTemplate.postForObject(url, changePasswordVO, Integer.class);
-            System.out.println(response);
+//            System.out.println(response);
             log.info(username + " already communicate with auth server");
             if (response != 200) {
                 return new CommonResponse(HttpStatus.SC_NOT_ACCEPTABLE, "Password not match");

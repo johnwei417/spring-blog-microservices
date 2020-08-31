@@ -42,23 +42,25 @@ public class AuthController {
     }
 
     @PostMapping("/createNewUser")
-    public void createUser(@RequestBody UserDto user) {
+    public Integer createUser(@RequestBody UserDto user) throws DuplicateUserException {
         try {
             Optional<UserDto> userDto = Optional.of(user);
             try {
                 userService.loadUserByUsername(userDto.get().getUsername());
                 log.warn("Username already exist!");
-                throw new DuplicateUserException("Username already exist!");
+                return HttpStatus.SC_BAD_REQUEST;
             } catch (UsernameNotFoundException e) {
                 List<Roles> authorities = new ArrayList<>();
                 authorities.add(roleService.getAuthorityById(1));
                 userDto.get().setAuthorities(authorities);
                 userService.save(userDto.get());
                 log.info("User: " + userDto.get().getUsername() + " register success!");
+                return HttpStatus.SC_OK;
             }
         } catch (NullPointerException ex) {
             log.warn("User is null, failed to create");
         }
+        return HttpStatus.SC_OK;
     }
 
     @PostMapping("/deleteUser")

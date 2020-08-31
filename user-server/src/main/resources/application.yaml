@@ -39,6 +39,7 @@ eureka:
     fetch-registy: true
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
+
 feign:
   hystrix:
     enabled: true
