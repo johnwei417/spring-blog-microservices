@@ -1,0 +1,14 @@
+add following hostname to /etc/hosts files
+
+127.0.0.1       kafka
+127.0.0.1       mysql
+127.0.0.1       eurekaServer
+127.0.0.1       authServer
+127.0.0.1       elasticsearch
+127.0.0.1       fileStorage
+127.0.0.1       mongodb
+127.0.0.1       userServer
+127.0.0.1       blogServer
+127.0.0.1       zuulGateway
+127.0.0.1       emailServer
+127.0.0.1       redis
