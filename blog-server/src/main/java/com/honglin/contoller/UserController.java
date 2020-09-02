@@ -25,6 +25,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @ResponseStatus(org.springframework.http.HttpStatus.OK)
     @PostMapping("/addUser")
     public Integer addUser(@RequestBody User user) {
         try {

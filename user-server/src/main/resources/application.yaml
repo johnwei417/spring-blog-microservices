@@ -2,7 +2,7 @@ spring:
   application:
     name: user-service
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
+    bootstrap-servers: kafka:9092
     listener:
       missing-topics-fatal: false
       concurrency: 3
@@ -23,22 +23,22 @@ security:
     client:
       client-id: userService
       client-secret: jojowei
-      access-token-uri: http://localhost:9890/oauth/token
-      user-authorization-uri: http://localhost:9890/oauth/authorize
+      access-token-uri: http://authServer:9890/oauth/token
+      user-authorization-uri: http://authServer:9890/oauth/authorize
     resource:
       jwt:
-        key-uri: http://localhost:9890/oauth/token_key
+        key-uri: http://authServer:9890/oauth/token_key
 
 server:
   port: 9393
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: userServer
   client:
     fetch-registy: true
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eurekaServer:8761/eureka/
 
 feign:
   hystrix:

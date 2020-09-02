@@ -2,7 +2,7 @@ spring:
   application:
     name: zuul-gateway
   redis:
-    host: 127.0.0.1
+    host: redis
     port: 6379
     password: jojowei
 
@@ -14,18 +14,18 @@ security:
     client:
       client-id: gateway
       client-secret: jojowei
-      access-token-uri: http://localhost:9890/oauth/token
-      user-authorization-uri: http://localhost:9890/oauth/authorize
+      access-token-uri: http://authServer:9890/oauth/token
+      user-authorization-uri: http://authServer:9890/oauth/authorize
     resource:
       jwt:
-        key-uri: http://localhost:9890/oauth/token_key
+        key-uri: http://authServer:9890/oauth/token_key
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: zuulGateway
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eurekaServer:8761/eureka/
 
 
 ribbon:

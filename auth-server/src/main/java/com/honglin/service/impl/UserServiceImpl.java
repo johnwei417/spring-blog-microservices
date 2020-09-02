@@ -6,6 +6,7 @@ import com.honglin.service.UserService;
 import com.honglin.vo.UserDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,15 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Slf4j
 public class UserServiceImpl implements UserDetailsService, UserService {
-
-    private final UserRep userRep;
-
-    private final PasswordEncoder passwordEncoder;
-
-    public UserServiceImpl(UserRep userRep, PasswordEncoder passwordEncoder) {
-        this.userRep = userRep;
-        this.passwordEncoder = passwordEncoder;
-    }
+    @Autowired
+    private UserRep userRep;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)

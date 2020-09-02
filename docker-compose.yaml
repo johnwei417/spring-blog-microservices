@@ -5,6 +5,7 @@ services:
       - es7net
     restart: on-failure
     container_name: mysql
+    hostname: mysql
     environment:
       MYSQL_ROOT_PASSWORD: "jojowei"
       MYSQL_USER: 'honglin'
@@ -17,9 +18,88 @@ services:
     ports:
       - "3306:3306"
 
+  authServer:
+    networks:
+      - es7net
+    container_name: auth-server
+    hostname: authServer
+    image: springboot/auth-server:latest
+    ports:
+      - "9890:9890"
+    depends_on:
+      - mysql
+      - eurekaServer
+
+  blogServer:
+    networks:
+      - es7net
+    hostname: blogServer
+    container_name: blog-server
+    image: springboot/blog-server:latest
+    ports:
+      - "8762:8762"
+    depends_on:
+      - authServer
+
+  userServer:
+    networks:
+      - es7net
+    hostname: userServer
+    container_name: user-server
+    image: springboot/user-server:latest
+    ports:
+      - "9393:9393"
+    depends_on:
+      - authServer
+      - kafka
+
+  ZuulGateway:
+    networks:
+      - es7net
+    container_name: gateway-server
+    hostname: zuulGateway
+    image: springboot/zuul-gateway:latest
+    ports:
+      - "10000:10000"
+    depends_on:
+      - authServer
+
+  fileStorage:
+    networks:
+      - es7net
+    container_name: file-storage-server
+    hostname: fileStorage
+    image: springboot/file-storage-server:latest
+    ports:
+      - "8792:8792"
+    depends_on:
+      - mongodb
+
+  emailServer:
+    networks:
+      - es7net
+    container_name: email-server
+    hostname: emailServer
+    image: springboot/email-server:latest
+    ports:
+      - "9394:9394"
+    depends_on:
+      - kafka
+
+  eurekaServer:
+    networks:
+      - es7net
+    restart: on-failure
+    hostname: eurekaServer
+    container_name: eureka-server
+    image: springboot/eureka-server:latest
+    ports:
+      - "8761:8761"
+
   mongodb:
     image: "mongo:latest"
     restart: on-failure
+    hostname: mongodb
     container_name: 'monogdb'
     networks:
       - es7net
@@ -136,11 +216,12 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
     container_name: es7_01
+    hostname: elasticsearch
     environment:
       - cluster.name=myElasticsearch
       - node.name=es7_01
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - discovery.seed_hosts=es7_01,es7_02
       - cluster.initial_master_nodes=es7_01,es7_02
     ulimits:
@@ -161,7 +242,7 @@ services:
       - cluster.name=myElasticsearch
       - node.name=es7_02
       - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
       - discovery.seed_hosts=es7_01,es7_02
       - cluster.initial_master_nodes=es7_01,es7_02
     ulimits:

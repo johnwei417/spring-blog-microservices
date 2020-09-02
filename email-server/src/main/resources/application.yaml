@@ -3,10 +3,10 @@ server:
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: emailServer
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eurekaServer:8761/eureka/
 
 
 
@@ -32,7 +32,7 @@ spring:
     username: d3cedd8d555c0e
     password: 82e7317d6e56cf
   kafka:
-    bootstrap-servers: 127.0.0.1:9092
+    bootstrap-servers: kafka:9092
     template:
       default-topic: register
     listener:

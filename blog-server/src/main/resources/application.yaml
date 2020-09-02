@@ -2,7 +2,7 @@ spring:
   application:
     name: blog-service
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/blog2?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=EST
+    url: jdbc:mysql://mysql:3306/blog2?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=EST
     username: root
     password: jojowei
   jpa:
@@ -13,14 +13,14 @@ spring:
         dialect: org.hibernate.dialect.MySQL5InnoDBDialect
   data:
     elasticsearch:
-      cluster-nodes: localhost:9300
+      cluster-nodes: elasticsearch:9300
       properties:
         transport:
           tcp:
             connect_timeout: 10s
       cluster-name: myElasticsearch
 elasticsearch:
-  host: localhost
+  host: elasticsearch
   port: 9300
 
 security:
@@ -28,21 +28,21 @@ security:
     client:
       client-id: blogService
       client-secret: jojowei
-      access-token-uri: http://localhost:9890/oauth/token
-      user-authorization-uri: http://localhost:9890/oauth/authorize
+      access-token-uri: http://authServer:9890/oauth/token
+      user-authorization-uri: http://authServer:9890/oauth/authorize
     resource:
       jwt:
-        key-uri: http://localhost:9890/oauth/token_key
+        key-uri: http://authServer:9890/oauth/token_key
 
 server:
   port: 8762
 
 eureka:
   instance:
-    hostname: localhost
+    hostname: blogServer
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eurekaServer:8761/eureka/
 
 
 logging:
@@ -52,4 +52,4 @@ logging:
 
 file:
   server:
-    url: http://localhost:10000/fileStorage/upload
+    url: http://zuulGateway:10000/fileStorage/upload

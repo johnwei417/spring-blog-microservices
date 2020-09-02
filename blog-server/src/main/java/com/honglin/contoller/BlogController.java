@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/blogs")
@@ -152,7 +153,12 @@ public class BlogController {
      */
     @GetMapping("/{username}/blogs/{id}")
     public CommonResponse getBlogById(@PathVariable("username") String username, @PathVariable("id") Long id, Principal principal) {
-        Blog blog = blogService.getBlogById(id);
+        Optional<Blog> blog;
+        try {
+            blog = Optional.of(blogService.getBlogById(id));
+        } catch (NullPointerException e) {
+            return new CommonResponse(HttpStatus.SC_BAD_REQUEST, "Blog id: " + id + " not exist");
+        }
 
         //increase the read counter by 1 for each loading
         blogService.readingIncrease(id);
@@ -164,7 +170,7 @@ public class BlogController {
             isBlogOwner = true;
         }
 
-        List<Vote> votes = blog.getVotes();
+        List<Vote> votes = blog.get().getVotes();
         Vote currentVote = null;
         //check if current user voted or not;
         if (principal != null) {
@@ -177,7 +183,7 @@ public class BlogController {
         }
 
         BlogDetailsVO blogDetailsVO = new BlogDetailsVO();
-        blogDetailsVO.setBlog(blog);
+        blogDetailsVO.setBlog(blog.get());
         blogDetailsVO.setCurrentVote(currentVote);
         blogDetailsVO.setIsBlogOwner(isBlogOwner);
 
