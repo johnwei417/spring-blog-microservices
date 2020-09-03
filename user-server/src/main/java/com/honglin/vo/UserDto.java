@@ -1,6 +1,7 @@
 package com.honglin.vo;
 
 
+import com.honglin.common.constraint.ValidPassword;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
@@ -18,7 +19,7 @@ public class UserDto {
 
     @NotNull(message = "password cannot be null")
     @NotBlank(message = "password cannot be blank")
-//    @ValidPassword
+    @ValidPassword
     private String password;
 
     @NotNull

@@ -272,7 +272,7 @@ public class UserController {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
             @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
     })
-    public CommonResponse changePassword(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
+    public CommonResponse changePassword(@RequestBody @Valid ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
         String url = "http://auth-service/changePassword?username=" + username;
         try {
             log.info(username + " is trying to change password");
