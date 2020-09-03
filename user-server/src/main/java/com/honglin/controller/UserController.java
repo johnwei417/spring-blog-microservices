@@ -32,9 +32,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 
 @RestController
 @Slf4j
@@ -148,6 +146,9 @@ public class UserController {
         messageConverters.add(new MappingJackson2HttpMessageConverter());
         restTemplate.setMessageConverters(messageConverters);
 
+
+        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch emailLatch = new CountDownLatch(2);
         Optional<UserDto> userDto;
         try {
             userDto = Optional.of(user);
@@ -171,7 +172,9 @@ public class UserController {
 
 
         Callable<Integer> callableFeedback = () -> {
-            return restTemplate.postForObject(url, request, Integer.class);
+            int result = restTemplate.postForObject(url, request, Integer.class);
+            emailLatch.countDown();
+            return result;
         };
 
         FutureTask<Integer> task1 = new FutureTask(callableFeedback);
@@ -195,24 +198,28 @@ public class UserController {
             BeanUtils.copyProperties(userDto.get(), user1);
             //call blog server
             Callable<Integer> callableResponse = () -> {
-                return blogClient.sync(user1);
+                int result = blogClient.sync(user1);
+                latch.countDown();
+                emailLatch.countDown();
+                return result;
             };
 
             FutureTask<Integer> task2 = new FutureTask<>(callableResponse);
             Thread t2 = new Thread(task2);
             t2.start();
-            t2.join();
-
+//            t2.join();
+            latch.await();
             Optional<Integer> response = null;
             try {
+                Thread.sleep(1000);
                 if (task2.isDone()) {
-                    response = Optional.of(task2.get());
+                    response = Optional.of(task2.get(200, TimeUnit.MILLISECONDS));
                 }
-            } catch (ExecutionException e) {
+            } catch (ExecutionException | TimeoutException e) {
                 e.printStackTrace();
             }
 
-            System.out.println(response);
+            System.out.println(response.get());
             if (response.get() != 200) {
                 log.error("Error happens at blog server, rollback");
                 String deleteUrl = "http://auth-service/deleteUser";
@@ -229,6 +236,7 @@ public class UserController {
                     return new CommonResponse<>(HttpStatus.SC_METHOD_FAILURE, "transaction at auth server failed");
                 }
             } else { //success
+                emailLatch.await();
                 try {
                     EmailDto emailDto = new EmailDto();
                     emailDto.setUsername(userDto.get().getUsername());
