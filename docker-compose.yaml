@@ -18,83 +18,85 @@ services:
     ports:
       - "3306:3306"
 
-  authServer:
-    networks:
-      - es7net
-    container_name: auth-server
-    hostname: authServer
-    image: springboot/auth-server:latest
-    ports:
-      - "9890:9890"
-    depends_on:
-      - mysql
-      - eurekaServer
-
-  blogServer:
-    networks:
-      - es7net
-    hostname: blogServer
-    container_name: blog-server
-    image: springboot/blog-server:latest
-    ports:
-      - "8762:8762"
-    depends_on:
-      - authServer
-
-  userServer:
-    networks:
-      - es7net
-    hostname: userServer
-    container_name: user-server
-    image: springboot/user-server:latest
-    ports:
-      - "9393:9393"
-    depends_on:
-      - authServer
-      - kafka
-
-  ZuulGateway:
-    networks:
-      - es7net
-    container_name: gateway-server
-    hostname: zuulGateway
-    image: springboot/zuul-gateway:latest
-    ports:
-      - "10000:10000"
-    depends_on:
-      - authServer
-
-  fileStorage:
-    networks:
-      - es7net
-    container_name: file-storage-server
-    hostname: fileStorage
-    image: springboot/file-storage-server:latest
-    ports:
-      - "8792:8792"
-    depends_on:
-      - mongodb
-
-  emailServer:
-    networks:
-      - es7net
-    container_name: email-server
-    hostname: emailServer
-    image: springboot/email-server:latest
-    ports:
-      - "9394:9394"
-    depends_on:
-      - kafka
-
-  eurekaServer:
-    networks:
-      - es7net
-    restart: on-failure
-    hostname: eurekaServer
-    container_name: eureka-server
-    image: springboot/eureka-server:latest
-    ports:
-      - "8761:8761"
+# FOR RUNNING DOCKER IMAGES INSIDE DOCKER
+# (NOT RECOMMEND FOR DEVELOPMENT AT LOCAL MACHINE)
+#  authServer:
+#    networks:
+#      - es7net
+#    container_name: auth-server
+#    hostname: authServer
+#    image: springboot/auth-server:latest
+#    ports:
+#      - "9890:9890"
+#    depends_on:
+#      - mysql
+#      - eurekaServer
+#
+#  blogServer:
+#    networks:
+#      - es7net
+#    hostname: blogServer
+#    container_name: blog-server
+#    image: springboot/blog-server:latest
+#    ports:
+#      - "8762:8762"
+#    depends_on:
+#      - authServer
+#
+#  userServer:
+#    networks:
+#      - es7net
+#    hostname: userServer
+#    container_name: user-server
+#    image: springboot/user-server:latest
+#    ports:
+#      - "9393:9393"
+#    depends_on:
+#      - authServer
+#      - kafka
+#
+#  ZuulGateway:
+#    networks:
+#      - es7net
+#    container_name: gateway-server
+#    hostname: zuulGateway
+#    image: springboot/zuul-gateway:latest
+#    ports:
+#      - "10000:10000"
+#    depends_on:
+#      - authServer
+#
+#  fileStorage:
+#    networks:
+#      - es7net
+#    container_name: file-storage-server
+#    hostname: fileStorage
+#    image: springboot/file-storage-server:latest
+#    ports:
+#      - "8792:8792"
+#    depends_on:
+#      - mongodb
+#
+#  emailServer:
+#    networks:
+#      - es7net
+#    container_name: email-server
+#    hostname: emailServer
+#    image: springboot/email-server:latest
+#    ports:
+#      - "9394:9394"
+#    depends_on:
+#      - kafka
+#
+#  eurekaServer:
+#    networks:
+#      - es7net
+#    restart: on-failure
+#    hostname: eurekaServer
+#    container_name: eureka-server
+#    image: springboot/eureka-server:latest
+#    ports:
+#      - "8761:8761"
 
   mongodb:
     image: "mongo:latest"
