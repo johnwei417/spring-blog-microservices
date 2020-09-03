@@ -32,6 +32,9 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 @RestController
 @Slf4j
@@ -50,6 +53,15 @@ public class UserController {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * user login feature
+     *
+     * @param client_id
+     * @param client_secret
+     * @param credentials
+     * @param bindingResult
+     * @return
+     */
 
     @PostMapping("/login")
     @HystrixCommand(fallbackMethod = "loginFallBack", commandProperties = {
@@ -112,6 +124,15 @@ public class UserController {
     }
 
 
+    /**
+     * user register feature
+     *
+     * @param user
+     * @param bindingResult
+     * @return
+     * @throws InterruptedException
+     */
+
     @PostMapping("/register")
     @HystrixCommand(fallbackMethod = "createUserFallBack", commandProperties = {
             @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "20"),
@@ -119,7 +140,7 @@ public class UserController {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
             @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
     })
-    public CommonResponse createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) {
+    public CommonResponse createUser(@RequestBody @Valid UserDto user, BindingResult bindingResult) throws InterruptedException {
 
         List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
         messageConverters.add(new FormHttpMessageConverter());
@@ -149,17 +170,50 @@ public class UserController {
         HttpEntity<authDto> request = new HttpEntity<>(autDto);
 
 
-        Integer feedback = restTemplate.postForObject(url, request, Integer.class);
-        if (feedback != HttpStatus.SC_OK) {
+        Callable<Integer> callableFeedback = () -> {
+            return restTemplate.postForObject(url, request, Integer.class);
+        };
+
+        FutureTask<Integer> task1 = new FutureTask(callableFeedback);
+        Thread t1 = new Thread(task1);
+        t1.start();
+        t1.join();
+        Optional<Integer> feedback = null;
+        try {
+            if (task1.isDone()) {
+                feedback = Optional.of(task1.get());
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        if (feedback.get() != HttpStatus.SC_OK) {
             return new CommonResponse(HttpStatus.SC_BAD_REQUEST, userDto.get().getUsername() + " already exist");
         } else {
             log.info("User: " + userDto.get().getUsername() + " added to db in auth server!");
             blogUserDto user1 = new blogUserDto();
             BeanUtils.copyProperties(userDto.get(), user1);
             //call blog server
-            Integer response = blogClient.sync(user1);
+            Callable<Integer> callableResponse = () -> {
+                return blogClient.sync(user1);
+            };
 
-            if (response != 200) {
+            FutureTask<Integer> task2 = new FutureTask<>(callableResponse);
+            Thread t2 = new Thread(task2);
+            t2.start();
+            t2.join();
+
+            Optional<Integer> response = null;
+            try {
+                if (task2.isDone()) {
+                    response = Optional.of(task2.get());
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(response);
+            if (response.get() != 200) {
                 log.error("Error happens at blog server, rollback");
                 String deleteUrl = "http://auth-service/deleteUser";
                 try {
@@ -196,6 +250,13 @@ public class UserController {
         return new CommonResponse(HttpStatus.SC_NOT_FOUND, "register service not available");
     }
 
+    /**
+     * change password for users
+     *
+     * @param changePasswordVO
+     * @param username
+     * @return
+     */
     @PostMapping("/changePassword")
     @HystrixCommand(fallbackMethod = "changePasswordFallBack", commandProperties = {
             @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "20"),
