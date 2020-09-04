@@ -2,7 +2,6 @@ package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
 import com.honglin.exceptions.KafkaFailureException;
-import com.honglin.httpclient.blogClient;
 import com.honglin.service.KafkaSender;
 import com.honglin.vo.*;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
@@ -39,9 +38,6 @@ import java.util.concurrent.*;
 public class UserController {
 
     private final RestTemplate restTemplate;
-
-    @Autowired
-    private blogClient blogClient;
 
     @Autowired
     private KafkaSender emailSender;
@@ -197,8 +193,11 @@ public class UserController {
             blogUserDto user1 = new blogUserDto();
             BeanUtils.copyProperties(userDto.get(), user1);
             //call blog server
+            String blogUrl = "http://blog-service/users/addUser";
+            HttpEntity<blogUserDto> request2 = new HttpEntity<>(user1);
+
             Callable<Integer> callableResponse = () -> {
-                int result = blogClient.sync(user1);
+                int result = restTemplate.postForObject(blogUrl, request2, Integer.class);
                 latch.countDown();
                 emailLatch.countDown();
                 return result;

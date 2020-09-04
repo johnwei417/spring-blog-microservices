@@ -1,4 +1,4 @@
-package com.honglin.contoller;
+package com.honglin.controller;
 
 import com.honglin.common.CommonResponse;
 import com.honglin.entity.Blog;
