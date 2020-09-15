@@ -18,6 +18,7 @@ Blog backend application with micro-services architecture &amp; asynchronous com
 * zuul-gateway: api gateway 
 
 ## Test Api
-* all requests should go to gateway which is localhost:10000, base on which server you want access, include prefix such as "blog" to access blog server
+* all requests should go to gateway which is localhost:10000, base on which server you want access, include prefix such as "blog" to access blog server.
+
 **Note**
 Documentation not finish yet, if you want test apis, please check gateway config. and apis defined inside each controllers in microservices
