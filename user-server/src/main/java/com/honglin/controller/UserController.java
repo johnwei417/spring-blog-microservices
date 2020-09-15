@@ -271,7 +271,19 @@ public class UserController {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "6000"),
             @HystrixProperty(name = "execution.isolation.strategy", value = "THREAD"),
     })
-    public CommonResponse changePassword(@RequestBody @Valid ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
+    public CommonResponse changePassword(@RequestBody @Valid ChangePasswordVO changePasswordVO, BindingResult bindingResult, @AuthenticationPrincipal String username) {
+        if (bindingResult.hasErrors()) {
+            if (bindingResult.getErrorCount() > 0) {
+                List<FieldError> errorFields = bindingResult.getFieldErrors();
+                for (FieldError fieldError : errorFields) {
+                    return new CommonResponse<>(HttpStatus.SC_BAD_REQUEST, fieldError.getDefaultMessage());
+                }
+            }
+        }
+        if (changePasswordVO.getOldPassword().equals(changePasswordVO.getNewPassword())) {
+            return new CommonResponse(HttpStatus.SC_BAD_REQUEST,
+                    "New password cannot be same as old password");
+        }
         String url = "http://auth-service/changePassword?username=" + username;
         try {
             log.info(username + " is trying to change password");
@@ -295,7 +307,7 @@ public class UserController {
     }
 
     //fallback for change password
-    public CommonResponse changePasswordFallBack(@RequestBody ChangePasswordVO changePasswordVO, @AuthenticationPrincipal String username) {
+    public CommonResponse changePasswordFallBack(@RequestBody ChangePasswordVO changePasswordVO, BindingResult bindingResult, @AuthenticationPrincipal String username) {
         return new CommonResponse(HttpStatus.SC_NOT_FOUND, "change password service not available");
     }
 }

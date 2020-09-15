@@ -69,6 +69,9 @@ public class BlogEditorController {
         List<Catalog> catalogs = catalogService.listCatalogs(user);
 
         Blog blog = blogService.getBlogById(id);
+        if (blog == null) {
+            return new CommonResponse(HttpStatus.SC_NOT_FOUND, "No blog ID:" + id + " exist");
+        }
         EditBlogVO editBlogVO = new EditBlogVO();
         editBlogVO.setBlog(blog);
         editBlogVO.setCatalogs(catalogs);

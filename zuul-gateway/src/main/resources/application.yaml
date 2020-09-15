@@ -33,12 +33,9 @@ ribbon:
 
 zuul:
   routes:
-    token:
-      serviceId: auth-service
-      sensitive-headers: Cookie,Set-Cookie
     blog:
       serviceId: blog-service
-      sensitive-headers: Cookie,Set-Cookie
+      sensitive-headers:
     user:
       serviceId: user-service
       sensitive-headers:
@@ -49,11 +46,6 @@ zuul:
     enabled: true
     repository: REDIS
     policy-list:
-      token:
-        - limit: 5
-          refresh-interval: 2
-          type:
-            - origin
       blog:
         - limit: 20
           refresh-interval: 2
