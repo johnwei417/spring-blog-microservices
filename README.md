@@ -1,4 +1,4 @@
-# spring-blog-microservices
+# Spring Blog Microservices
 Blog backend application with micro-services architecture &amp; asynchronous communications using Kafka &amp; Oauth2 Security &amp; Hystrix &amp; ELK 
 
 ## Instruction
