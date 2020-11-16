@@ -88,7 +88,7 @@ public class OAuth2Config extends AuthorizationServerConfigurerAdapter {
                 .and()
                 .withClient("userService")
                 .secret(passwordEncoder.encode("jojowei"))
-                .authorizedGrantTypes("password")
+                .authorizedGrantTypes("password", "refresh_token")
                 .scopes("read", "write")
                 .accessTokenValiditySeconds(3600)
                 .resourceIds("user-service")
